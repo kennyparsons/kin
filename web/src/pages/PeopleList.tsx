@@ -49,23 +49,29 @@ export function PeopleList() {
         ) : (
           <div className="divide-y divide-gray-100">
             {people.map(person => (
-              <div key={person.id} className="p-4 hover:bg-gray-50 transition-colors flex justify-between items-center group">
-                <div>
-                  <h3 className="font-medium text-gray-900">{person.name}</h3>
-                  <div className="text-sm text-gray-500 flex space-x-2">
-                    {person.role && <span>{person.role}</span>}
-                    {person.company && (
-                      <>
-                        <span>&bull;</span>
-                        <span>{person.company}</span>
-                      </>
-                    )}
+              <Link 
+                to={`/people/${person.id}`} 
+                key={person.id} 
+                className="block p-4 hover:bg-gray-50 transition-colors group"
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{person.name}</h3>
+                    <div className="text-sm text-gray-500 flex space-x-2">
+                      {person.role && <span>{person.role}</span>}
+                      {person.company && (
+                        <>
+                          <span>&bull;</span>
+                          <span>{person.company}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
+                  <span className="text-gray-300 group-hover:text-blue-600 transition-colors">
+                    View
+                  </span>
                 </div>
-                <Link to={`/people/${person.id}`} className="text-gray-400 group-hover:text-blue-600">
-                  View
-                </Link>
-              </div>
+              </Link>
             ))}
           </div>
         )}
