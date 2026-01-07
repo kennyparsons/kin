@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import { Person } from '../types';
 
 export function PersonForm() {
@@ -15,8 +15,9 @@ export function PersonForm() {
     manager_name: '',
     role: '',
     tags: '',
-    metadata: '{}'
   });
+  
+  const [metadataFields, setMetadataFields] = useState<{key: string, value: string}[]>([]);
 
   useEffect(() => {
     if (isEditing && id) {
@@ -24,10 +25,23 @@ export function PersonForm() {
       fetch(`/api/people/${id}`)
         .then(res => res.json())
         .then(data => {
-          setFormData({
-            ...data,
-            metadata: JSON.stringify(data.metadata || {}, null, 2)
-          });
+          setFormData(data);
+          
+          try {
+            const parsedMeta = typeof data.metadata === 'string' 
+              ? JSON.parse(data.metadata) 
+              : data.metadata || {};
+              
+            const fields = Object.entries(parsedMeta).map(([key, value]) => ({
+              key,
+              value: String(value)
+            }));
+            setMetadataFields(fields);
+          } catch (e) {
+            console.error("Failed to parse metadata", e);
+            setMetadataFields([]);
+          }
+          
           setLoading(false);
         })
         .catch(err => {
@@ -37,15 +51,38 @@ export function PersonForm() {
     }
   }, [isEditing, id]);
 
+  const addMetadataField = () => {
+    setMetadataFields([...metadataFields, { key: '', value: '' }]);
+  };
+
+  const removeMetadataField = (index: number) => {
+    const newFields = [...metadataFields];
+    newFields.splice(index, 1);
+    setMetadataFields(newFields);
+  };
+
+  const updateMetadataField = (index: number, field: 'key' | 'value', newValue: string) => {
+    const newFields = [...metadataFields];
+    newFields[index][field] = newValue;
+    setMetadataFields(newFields);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      // Parse metadata to ensure it's valid JSON
+      // Convert array back to object
+      const metadataObj = metadataFields.reduce((acc, curr) => {
+        if (curr.key.trim()) {
+          acc[curr.key.trim()] = curr.value;
+        }
+        return acc;
+      }, {} as Record<string, any>);
+
       const payload = {
         ...formData,
-        metadata: JSON.parse(formData.metadata || '{}')
+        metadata: metadataObj
       };
 
       const url = isEditing ? `/api/people/${id}` : '/api/people';
@@ -63,7 +100,7 @@ export function PersonForm() {
         alert('Failed to save person');
       }
     } catch (err) {
-      alert('Invalid JSON in metadata field');
+      alert('Error saving data');
     } finally {
       setLoading(false);
     }
@@ -92,7 +129,7 @@ export function PersonForm() {
               <input 
                 required
                 type="text" 
-                value={formData.name}
+                value={formData.name || ''}
                 onChange={e => setFormData({...formData, name: e.target.value})}
                 className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               />
@@ -154,14 +191,49 @@ export function PersonForm() {
 
           {/* Metadata */}
           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Extra Metadata (JSON)</label>
-             <p className="text-xs text-gray-500 mb-2">Use this for flexible fields like "favorite_drink": "coffee"</p>
-             <textarea 
-                rows={4}
-                value={formData.metadata || '{}'}
-                onChange={e => setFormData({...formData, metadata: e.target.value})}
-                className="w-full rounded-lg border-gray-300 border p-2 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              />
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium text-gray-700">Extra Details</label>
+              <button 
+                type="button" 
+                onClick={addMetadataField}
+                className="text-sm text-blue-600 hover:text-blue-800 flex items-center font-medium"
+              >
+                <Plus size={16} className="mr-1" /> Add Field
+              </button>
+            </div>
+             
+             <div className="space-y-3">
+               {metadataFields.map((field, index) => (
+                 <div key={index} className="flex space-x-2">
+                   <input
+                     type="text"
+                     placeholder="Label (e.g. Birthday)"
+                     value={field.key}
+                     onChange={(e) => updateMetadataField(index, 'key', e.target.value)}
+                     className="flex-1 rounded-lg border-gray-300 border p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                   />
+                   <input
+                     type="text"
+                     placeholder="Value"
+                     value={field.value}
+                     onChange={(e) => updateMetadataField(index, 'value', e.target.value)}
+                     className="flex-1 rounded-lg border-gray-300 border p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                   />
+                   <button
+                    type="button"
+                    onClick={() => removeMetadataField(index)}
+                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                   >
+                     <Trash2 size={18} />
+                   </button>
+                 </div>
+               ))}
+               {metadataFields.length === 0 && (
+                 <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-gray-500 text-sm">
+                   No extra details added.
+                 </div>
+               )}
+             </div>
           </div>
 
           <div className="flex justify-end pt-4">
