@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, Mail, Users, MessageSquare, Clock, CheckCircle, Edit2, X, Save } from 'lucide-react';
 import { Person, Interaction } from '../types';
 import { format } from 'date-fns';
+import { API_BASE } from '../config';
 
 export function PersonDetail() {
   const { id } = useParams();
@@ -27,7 +28,7 @@ export function PersonDetail() {
   const [reminderDate, setReminderDate] = useState('');
 
   const fetchPerson = () => {
-    fetch(`/api/people/${id}`)
+    fetch(`${API_BASE}/api/people/${id}`)
       .then(res => res.json())
       .then(data => {
         setPerson(data);
@@ -44,7 +45,7 @@ export function PersonDetail() {
     e.preventDefault();
     if (!id) return;
     
-    await fetch('/api/interactions', {
+    await fetch(`${API_BASE}/api/interactions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -77,7 +78,7 @@ export function PersonDetail() {
     e.preventDefault();
     if (!editingInteractionId) return;
 
-    await fetch(`/api/interactions/${editingInteractionId}`, {
+    await fetch(`${API_BASE}/api/interactions/${editingInteractionId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -95,7 +96,7 @@ export function PersonDetail() {
     e.preventDefault();
     if (!id) return;
     
-    await fetch('/api/reminders', {
+    await fetch(`${API_BASE}/api/reminders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -112,7 +113,7 @@ export function PersonDetail() {
   };
 
   const toggleReminderStatus = async (reminderId: number, currentStatus: string) => {
-    await fetch(`/api/reminders/${reminderId}/status`, {
+    await fetch(`${API_BASE}/api/reminders/${reminderId}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

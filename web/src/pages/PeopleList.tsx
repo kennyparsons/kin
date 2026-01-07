@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Person } from '../types';
 import { Plus, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../config';
 
 export function PeopleList() {
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/people')
+    fetch(`${API_BASE}/api/people`)
       .then(res => res.json())
       .then(data => {
         setPeople(data as Person[]);

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import { Person } from '../types';
+import { API_BASE } from '../config';
 
 export function PersonForm() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export function PersonForm() {
   useEffect(() => {
     if (isEditing && id) {
       setLoading(true);
-      fetch(`/api/people/${id}`)
+      fetch(`${API_BASE}/api/people/${id}`)
         .then(res => res.json())
         .then(data => {
           setFormData(data);
@@ -85,7 +86,7 @@ export function PersonForm() {
         metadata: metadataObj
       };
 
-      const url = isEditing ? `/api/people/${id}` : '/api/people';
+      const url = isEditing ? `${API_BASE}/api/people/${id}` : `${API_BASE}/api/people`;
       const method = isEditing ? 'PUT' : 'POST';
 
       const res = await fetch(url, {

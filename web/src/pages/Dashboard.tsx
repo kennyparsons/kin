@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, UserPlus, CheckCircle, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Reminder, Person } from '../types';
+import { API_BASE } from '../config';
 
 interface DashboardData {
   reminders: (Reminder & { person_name: string })[];
@@ -14,7 +15,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/dashboard')
+    fetch(`${API_BASE}/api/dashboard`)
       .then(res => res.json())
       .then(data => {
         setData(data);
@@ -27,13 +28,13 @@ export function Dashboard() {
   }, []);
 
   const toggleReminder = async (id: number, currentStatus: string) => {
-    await fetch(`/api/reminders/${id}/status`, {
+    await fetch(`${API_BASE}/api/reminders/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: currentStatus === 'pending' ? 'done' : 'pending' })
     });
     // Refresh data
-    const res = await fetch('/api/dashboard');
+    const res = await fetch(`${API_BASE}/api/dashboard`);
     const newData = await res.json();
     setData(newData);
   };
