@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, Users, MessageSquare, Calendar, Clock, CheckCircle } from 'lucide-react';
-import { Person, Interaction, Reminder } from '../types';
+import { ArrowLeft, Phone, Mail, Users, MessageSquare, Clock, CheckCircle, Edit2, X, Save } from 'lucide-react';
+import { Person, Interaction } from '../types';
 import { format } from 'date-fns';
 
 export function PersonDetail() {
@@ -14,6 +14,12 @@ export function PersonDetail() {
   const [showInteractionForm, setShowInteractionForm] = useState(false);
   const [interactionType, setInteractionType] = useState<Interaction['type']>('call');
   const [interactionSummary, setInteractionSummary] = useState('');
+
+  // Editing Interaction State
+  const [editingInteractionId, setEditingInteractionId] = useState<number | null>(null);
+  const [editInteractionType, setEditInteractionType] = useState<Interaction['type']>('call');
+  const [editInteractionSummary, setEditInteractionSummary] = useState('');
+  const [editInteractionDate, setEditInteractionDate] = useState<string>('');
 
   // Reminder Form State
   const [showReminderForm, setShowReminderForm] = useState(false);
@@ -51,6 +57,37 @@ export function PersonDetail() {
     
     setShowInteractionForm(false);
     setInteractionSummary('');
+    fetchPerson();
+  };
+
+  const startEditingInteraction = (interaction: Interaction) => {
+    setEditingInteractionId(interaction.id);
+    setEditInteractionType(interaction.type);
+    setEditInteractionSummary(interaction.summary || '');
+    // Convert timestamp to YYYY-MM-DD for date input (simplified for now, ideally datetime-local)
+    setEditInteractionDate(new Date(interaction.date * 1000).toISOString().split('T')[0]);
+  };
+
+  const cancelEditingInteraction = () => {
+    setEditingInteractionId(null);
+    setEditInteractionSummary('');
+  };
+
+  const handleEditInteractionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingInteractionId) return;
+
+    await fetch(`/api/interactions/${editingInteractionId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: editInteractionType,
+        summary: editInteractionSummary,
+        date: Math.floor(new Date(editInteractionDate).getTime() / 1000)
+      })
+    });
+
+    setEditingInteractionId(null);
     fetchPerson();
   };
 
@@ -167,26 +204,81 @@ export function PersonDetail() {
 
             <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:h-full before:w-0.5 before:bg-gray-100">
               {person.interactions?.map(interaction => (
-                <div key={interaction.id} className="relative flex items-start group">
-                  <div className={`absolute left-0 p-2 rounded-full border-2 border-white ${
-                    interaction.type === 'meeting' ? 'bg-purple-100 text-purple-600' :
-                    interaction.type === 'call' ? 'bg-green-100 text-green-600' :
-                    'bg-blue-100 text-blue-600'
-                  }`}>
-                    {interaction.type === 'call' ? <Phone size={14} /> : 
-                     interaction.type === 'email' ? <Mail size={14} /> : 
-                     interaction.type === 'meeting' ? <Users size={14} /> : 
-                     <MessageSquare size={14} />}
-                  </div>
-                  <div className="ml-12 w-full">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{interaction.type}</span>
-                      <span className="text-xs text-gray-400">{format(new Date(interaction.date * 1000), 'MMM d, yyyy')}</span>
+                <div key={interaction.id} className="relative group">
+                  {editingInteractionId === interaction.id ? (
+                    <form onSubmit={handleEditInteractionSubmit} className="ml-12 bg-gray-50 p-4 rounded-lg border border-blue-200 shadow-sm relative z-10">
+                      <div className="flex justify-between items-start mb-3">
+                         <div className="flex space-x-2">
+                            {['call', 'email', 'meeting', 'text', 'other'].map(type => (
+                              <button
+                                key={type}
+                                type="button"
+                                onClick={() => setEditInteractionType(type as any)}
+                                className={`px-2 py-0.5 rounded text-xs font-medium capitalize transition-colors ${
+                                  editInteractionType === type 
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                                }`}
+                              >
+                                {type}
+                              </button>
+                            ))}
+                          </div>
+                          <input 
+                            type="date" 
+                            required
+                            value={editInteractionDate}
+                            onChange={e => setEditInteractionDate(e.target.value)}
+                            className="text-xs border rounded p-1"
+                          />
+                      </div>
+                      <textarea 
+                        required
+                        value={editInteractionSummary}
+                        onChange={e => setEditInteractionSummary(e.target.value)}
+                        className="w-full rounded border-gray-300 border p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none mb-3"
+                        rows={2}
+                      />
+                      <div className="flex justify-end space-x-2">
+                        <button type="button" onClick={cancelEditingInteraction} className="p-1 text-gray-500 hover:text-gray-700">
+                           <X size={16} />
+                        </button>
+                        <button type="submit" className="flex items-center space-x-1 bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700">
+                           <Save size={14} /> <span>Save</span>
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="flex items-start">
+                      <div className={`absolute left-0 p-2 rounded-full border-2 border-white ${
+                        interaction.type === 'meeting' ? 'bg-purple-100 text-purple-600' :
+                        interaction.type === 'call' ? 'bg-green-100 text-green-600' :
+                        'bg-blue-100 text-blue-600'
+                      }`}>
+                        {interaction.type === 'call' ? <Phone size={14} /> : 
+                         interaction.type === 'email' ? <Mail size={14} /> : 
+                         interaction.type === 'meeting' ? <Users size={14} /> : 
+                         <MessageSquare size={14} />}
+                      </div>
+                      <div className="ml-12 w-full group/item">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{interaction.type}</span>
+                          <div className="flex items-center space-x-2">
+                             <span className="text-xs text-gray-400">{format(new Date(interaction.date * 1000), 'MMM d, yyyy')}</span>
+                             <button 
+                              onClick={() => startEditingInteraction(interaction)}
+                              className="text-gray-300 hover:text-blue-600 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                             >
+                               <Edit2 size={12} />
+                             </button>
+                          </div>
+                        </div>
+                        <p className="text-gray-800 mt-1 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+                          {interaction.summary}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-gray-800 mt-1 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      {interaction.summary}
-                    </p>
-                  </div>
+                  )}
                 </div>
               ))}
               {(!person.interactions || person.interactions.length === 0) && (

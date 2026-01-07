@@ -102,6 +102,18 @@ app.post('/api/interactions', async (c) => {
   return c.json({ success: true, id: result.meta.last_row_id }, 201)
 })
 
+app.put('/api/interactions/:id', async (c) => {
+  const id = c.req.param('id')
+  const body = await c.req.json()
+  const { type, summary, date } = body
+
+  await c.env.DB.prepare(
+    `UPDATE interactions SET type = ?, summary = ?, date = ? WHERE id = ?`
+  ).bind(type, summary, date, id).run()
+
+  return c.json({ success: true })
+})
+
 // --- Reminder Routes ---
 
 app.post('/api/reminders', async (c) => {
