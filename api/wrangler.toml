@@ -6,3 +6,7 @@ compatibility_date = "2024-01-01"
 binding = "DB"
 database_name = "kin-db-prod"
 database_id = "675b6d41-0307-49f6-89ce-b37603c1e418"
+
+[vars]
+FRONTEND_URL = "http://localhost:5173"
+# JWT_SECRET = "set-via-wrangler-secret-or-dev-vars"
