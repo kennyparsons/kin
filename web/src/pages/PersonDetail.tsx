@@ -378,6 +378,12 @@ export function PersonDetail() {
                   <dd className="text-gray-900 font-medium truncate ml-2">{person.email}</dd>
                 </div>
               )}
+              {person.phone && (
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Phone</dt>
+                  <dd className="text-gray-900 font-medium truncate ml-2">{person.phone}</dd>
+                </div>
+              )}
               {person.tags && (
                 <div>
                   <dt className="text-gray-500 mb-1">Tags</dt>

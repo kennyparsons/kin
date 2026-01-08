@@ -13,6 +13,7 @@ export function PersonForm() {
   const [formData, setFormData] = useState<Partial<Person>>({
     name: '',
     email: '',
+    phone: '',
     company: '',
     manager_name: '',
     role: '',
@@ -167,6 +168,15 @@ export function PersonForm() {
                 type="email" 
                 value={formData.email || ''}
                 onChange={e => setFormData({...formData, email: e.target.value})}
+                className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <input 
+                type="tel" 
+                value={formData.phone || ''}
+                onChange={e => setFormData({...formData, phone: e.target.value})}
                 className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               />
             </div>
