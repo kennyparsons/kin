@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Building, Briefcase, Filter, Layers, X } from 'lucide-react';
+import { Plus, Search, Building, Briefcase, Filter, Layers, X, MapPin } from 'lucide-react';
 import { Person } from '../types';
 import { apiFetch } from '../utils/api';
 
@@ -15,6 +15,7 @@ export function PeopleList() {
   const [groupBy, setGroupBy] = useState<GroupBy>('none');
   const [filterCompany, setFilterCompany] = useState('');
   const [filterFunction, setFilterFunction] = useState('');
+  const [filterLocation, setFilterLocation] = useState('');
 
   useEffect(() => {
     apiFetch('/api/people')
@@ -50,6 +51,10 @@ export function PeopleList() {
     Array.from(new Set(people.map(p => p.function).filter(Boolean))) as string[], 
   [people]);
 
+  const uniqueLocations = useMemo(() => 
+    Array.from(new Set(people.map(p => p.location).filter(Boolean))) as string[], 
+  [people]);
+
   // Filter Data
   const filteredPeople = useMemo(() => {
     return people.filter(p => {
@@ -57,10 +62,11 @@ export function PeopleList() {
                             p.company?.toLowerCase().includes(search.toLowerCase());
       const matchesCompany = !filterCompany || p.company === filterCompany;
       const matchesFunction = !filterFunction || p.function === filterFunction;
+      const matchesLocation = !filterLocation || p.location === filterLocation;
       
-      return matchesSearch && matchesCompany && matchesFunction;
+      return matchesSearch && matchesCompany && matchesFunction && matchesLocation;
     });
-  }, [people, search, filterCompany, filterFunction]);
+  }, [people, search, filterCompany, filterFunction, filterLocation]);
 
   // Group Data
   const groupedData = useMemo(() => {
@@ -98,6 +104,7 @@ export function PeopleList() {
             <div className="flex items-center text-sm text-gray-500 space-x-3">
               {person.company && <span className="flex items-center truncate"><Building size={12} className="mr-1" /> {person.company}</span>}
               {person.function && <span className="flex items-center truncate"><Briefcase size={12} className="mr-1" /> {person.function}</span>}
+              {person.location && <span className="flex items-center truncate"><MapPin size={12} className="mr-1" /> {person.location}</span>}
               {person.role && <span className="truncate hidden sm:inline">• {person.role}</span>}
             </div>
           </div>
@@ -172,6 +179,23 @@ export function PeopleList() {
               <Briefcase size={14} className={`absolute left-2.5 top-3 ${filterFunction ? 'text-blue-500' : 'text-gray-400'}`} />
               {filterFunction && (
                  <button onClick={() => setFilterFunction('')} className="absolute right-2 top-2.5 text-blue-500 hover:text-blue-700">
+                   <X size={14} />
+                 </button>
+              )}
+            </div>
+
+            <div className="relative">
+              <select 
+                value={filterLocation}
+                onChange={e => setFilterLocation(e.target.value)}
+                className={`pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${filterLocation ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
+              >
+                <option value="">Location</option>
+                {uniqueLocations.sort().map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+              <MapPin size={14} className={`absolute left-2.5 top-3 ${filterLocation ? 'text-blue-500' : 'text-gray-400'}`} />
+              {filterLocation && (
+                 <button onClick={() => setFilterLocation('')} className="absolute right-2 top-2.5 text-blue-500 hover:text-blue-700">
                    <X size={14} />
                  </button>
               )}
