@@ -192,11 +192,11 @@ app.get('/api/people/:id', async (c) => {
 
 app.post('/api/people', async (c) => {
   const body = await c.req.json()
-  const { name, email, company, manager_name, role, tags, metadata, frequency_days, notes, phone } = body
+  const { name, email, company, manager_name, role, tags, metadata, frequency_days, notes, phone, function: func } = body
   
   const result = await c.env.DB.prepare(
-    `INSERT INTO people (name, email, company, manager_name, role, tags, metadata, frequency_days, notes, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), frequency_days || null, notes || null, phone || null).run()
+    `INSERT INTO people (name, email, company, manager_name, role, tags, metadata, frequency_days, notes, phone, function) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), frequency_days || null, notes || null, phone || null, func || null).run()
   
   return c.json({ success: true, id: result.meta.last_row_id }, 201)
 })
@@ -204,10 +204,10 @@ app.post('/api/people', async (c) => {
 app.put('/api/people/:id', async (c) => {
   const id = c.req.param('id')
   const body = await c.req.json()
-  const { name, email, company, manager_name, role, tags, metadata, frequency_days, notes, phone } = body
+  const { name, email, company, manager_name, role, tags, metadata, frequency_days, notes, phone, function: func } = body
 
   await c.env.DB.prepare(
-    `UPDATE people SET name = ?, email = ?, company = ?, manager_name = ?, role = ?, tags = ?, metadata = ?, frequency_days = ?, notes = ?, phone = ?, updated_at = unixepoch() WHERE id = ?`
+    `UPDATE people SET name = ?, email = ?, company = ?, manager_name = ?, role = ?, tags = ?, metadata = ?, frequency_days = ?, notes = ?, phone = ?, function = ?, updated_at = unixepoch() WHERE id = ?`
   ).bind(
     name, 
     email || null, 
@@ -219,6 +219,7 @@ app.put('/api/people/:id', async (c) => {
     frequency_days || null, 
     notes || null, 
     phone || null,
+    func || null,
     id
   ).run()
 

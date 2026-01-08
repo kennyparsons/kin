@@ -1,13 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Building } from 'lucide-react';
+import { Plus, Search, Building, Briefcase, Filter, Layers, X } from 'lucide-react';
 import { Person } from '../types';
 import { apiFetch } from '../utils/api';
+
+type GroupBy = 'none' | 'company' | 'function' | 'kit';
 
 export function PeopleList() {
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  
+  // Filters & Grouping
+  const [groupBy, setGroupBy] = useState<GroupBy>('none');
+  const [filterCompany, setFilterCompany] = useState('');
+  const [filterFunction, setFilterFunction] = useState('');
 
   useEffect(() => {
     apiFetch('/api/people')
@@ -16,31 +23,114 @@ export function PeopleList() {
       .finally(() => setLoading(false));
   }, []);
 
-  const getHealthColor = (person: Person) => {
-    if (!person.frequency_days) return null; // No rule
-    
+  const getHealthStatus = (person: Person) => {
+    if (!person.frequency_days) return 'Inactive';
     const now = Math.floor(Date.now() / 1000);
     const last = person.last_interaction || 0;
     const diffDays = (now - last) / 86400;
+    if (diffDays > person.frequency_days) return 'Overdue';
+    if (diffDays > person.frequency_days * 0.8) return 'Due Soon';
+    return 'Healthy';
+  };
+
+  const getHealthColor = (person: Person) => {
+    const status = getHealthStatus(person);
+    if (status === 'Overdue') return 'bg-red-500';
+    if (status === 'Due Soon') return 'bg-yellow-500';
+    if (status === 'Healthy') return 'bg-green-500';
+    return null;
+  };
+
+  // Derive Filters
+  const uniqueCompanies = useMemo(() => 
+    Array.from(new Set(people.map(p => p.company).filter(Boolean))) as string[], 
+  [people]);
+
+  const uniqueFunctions = useMemo(() => 
+    Array.from(new Set(people.map(p => p.function).filter(Boolean))) as string[], 
+  [people]);
+
+  // Filter Data
+  const filteredPeople = useMemo(() => {
+    return people.filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
+                            p.company?.toLowerCase().includes(search.toLowerCase());
+      const matchesCompany = !filterCompany || p.company === filterCompany;
+      const matchesFunction = !filterFunction || p.function === filterFunction;
+      
+      return matchesSearch && matchesCompany && matchesFunction;
+    });
+  }, [people, search, filterCompany, filterFunction]);
+
+  // Group Data
+  const groupedData = useMemo(() => {
+    if (groupBy === 'none') return { 'All People': filteredPeople };
+
+    const groups: Record<string, Person[]> = {};
     
-    if (diffDays > person.frequency_days) return 'bg-red-500';
-    if (diffDays > person.frequency_days * 0.8) return 'bg-yellow-500';
-    return 'bg-green-500';
+    filteredPeople.forEach(person => {
+      let key = 'Uncategorized';
+      if (groupBy === 'company') key = person.company || 'No Company';
+      if (groupBy === 'function') key = person.function || 'No Function';
+      if (groupBy === 'kit') key = getHealthStatus(person);
+
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(person);
+    });
+
+    // Sort keys?
+    return groups;
+  }, [filteredPeople, groupBy]);
+
+  const renderPersonRow = (person: Person) => {
+    const healthColor = getHealthColor(person);
+    return (
+      <Link key={person.id} to={`/people/${person.id}`} className="block p-4 hover:bg-gray-50 transition-colors flex items-center justify-between group">
+        <div className="flex items-center space-x-4">
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold relative flex-shrink-0">
+            {person.name.charAt(0)}
+            {healthColor && (
+              <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full ${healthColor}`}></span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-medium text-gray-900 truncate">{person.name}</h3>
+            <div className="flex items-center text-sm text-gray-500 space-x-3">
+              {person.company && <span className="flex items-center truncate"><Building size={12} className="mr-1" /> {person.company}</span>}
+              {person.function && <span className="flex items-center truncate"><Briefcase size={12} className="mr-1" /> {person.function}</span>}
+              {person.role && <span className="truncate hidden sm:inline">• {person.role}</span>}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center">
+          {person.tags && (
+            <div className="hidden sm:flex space-x-2 mr-4">
+              {person.tags.split(',').slice(0, 2).map(tag => (
+                <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                  {tag.trim()}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </Link>
+    );
   };
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-gray-900">People</h1>
-        <Link to="/people/new" className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700 transition-colors">
+        <Link to="/people/new" className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700 transition-colors justify-center">
           <Plus size={20} className="mr-2" />
           Add Person
         </Link>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <div className="relative">
+        {/* Toolbar */}
+        <div className="p-4 border-b border-gray-200 flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
             <Search size={18} className="absolute left-3 top-2.5 text-gray-400" />
             <input 
               type="text" 
@@ -50,48 +140,80 @@ export function PeopleList() {
               className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {/* Filters */}
+            <div className="relative">
+              <select 
+                value={filterCompany}
+                onChange={e => setFilterCompany(e.target.value)}
+                className={`pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${filterCompany ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
+              >
+                <option value="">Company</option>
+                {uniqueCompanies.sort().map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <Filter size={14} className={`absolute left-2.5 top-3 ${filterCompany ? 'text-blue-500' : 'text-gray-400'}`} />
+              {filterCompany && (
+                 <button onClick={() => setFilterCompany('')} className="absolute right-2 top-2.5 text-blue-500 hover:text-blue-700">
+                   <X size={14} />
+                 </button>
+              )}
+            </div>
+
+            <div className="relative">
+              <select 
+                value={filterFunction}
+                onChange={e => setFilterFunction(e.target.value)}
+                className={`pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${filterFunction ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
+              >
+                <option value="">Function</option>
+                {uniqueFunctions.sort().map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+              <Briefcase size={14} className={`absolute left-2.5 top-3 ${filterFunction ? 'text-blue-500' : 'text-gray-400'}`} />
+              {filterFunction && (
+                 <button onClick={() => setFilterFunction('')} className="absolute right-2 top-2.5 text-blue-500 hover:text-blue-700">
+                   <X size={14} />
+                 </button>
+              )}
+            </div>
+
+            {/* Group By */}
+            <div className="relative border-l border-gray-200 pl-2 ml-2">
+              <select 
+                value={groupBy}
+                onChange={e => setGroupBy(e.target.value as GroupBy)}
+                className={`pl-8 pr-4 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${groupBy !== 'none' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'border-gray-300'}`}
+              >
+                <option value="none">No Grouping</option>
+                <option value="company">Group by Company</option>
+                <option value="function">Group by Function</option>
+                <option value="kit">Group by Status</option>
+              </select>
+              <Layers size={14} className={`absolute left-2.5 top-3 ${groupBy !== 'none' ? 'text-indigo-500' : 'text-gray-400'}`} />
+            </div>
+          </div>
         </div>
         
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading...</div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {people.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).map(person => {
-              const healthColor = getHealthColor(person);
-              return (
-                <Link key={person.id} to={`/people/${person.id}`} className="block p-4 hover:bg-gray-50 transition-colors flex items-center justify-between group">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold relative">
-                      {person.name.charAt(0)}
-                      {healthColor && (
-                        <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full ${healthColor}`}></span>
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">{person.name}</h3>
-                      <div className="flex items-center text-sm text-gray-500 space-x-3">
-                        {person.company && <span className="flex items-center"><Building size={12} className="mr-1" /> {person.company}</span>}
-                        {person.role && <span>{person.role}</span>}
-                      </div>
-                    </div>
+            {Object.entries(groupedData).map(([groupTitle, groupPeople]) => (
+              <div key={groupTitle}>
+                {groupBy !== 'none' && (
+                  <div className="bg-gray-50 px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider sticky top-0 border-b border-gray-100">
+                    {groupTitle} ({groupPeople.length})
                   </div>
-                  <div className="flex items-center">
-                    {person.tags && (
-                      <div className="hidden sm:flex space-x-2 mr-4">
-                        {person.tags.split(',').slice(0, 2).map(tag => (
-                          <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                            {tag.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-            {people.length === 0 && (
+                )}
+                <div>
+                  {groupPeople.map(renderPersonRow)}
+                </div>
+              </div>
+            ))}
+            
+            {filteredPeople.length === 0 && (
               <div className="p-8 text-center text-gray-500">
-                No people found. Add your first contact!
+                No people found matching your filters.
               </div>
             )}
           </div>

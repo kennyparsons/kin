@@ -19,6 +19,7 @@ export function PersonForm() {
     email: '',
     phone: '',
     company: '',
+    function: '',
     manager_name: '',
     role: '',
     tags: '',
@@ -202,6 +203,29 @@ export function PersonForm() {
                 onChange={e => setFormData({...formData, phone: e.target.value})}
                 className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Function / Department</label>
+              <input 
+                type="text" 
+                list="functions"
+                value={formData.function || ''}
+                onChange={e => setFormData({...formData, function: e.target.value})}
+                placeholder="e.g. Sales, Engineering"
+                className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              />
+              <datalist id="functions">
+                <option value="Engineering" />
+                <option value="Sales" />
+                <option value="Marketing" />
+                <option value="Product" />
+                <option value="Design" />
+                <option value="Executive" />
+                <option value="Finance" />
+                <option value="Operations" />
+                <option value="HR" />
+                <option value="Legal" />
+              </datalist>
             </div>
           </div>
 

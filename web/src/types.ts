@@ -4,6 +4,7 @@ export interface Person {
   email?: string;
   phone?: string;
   company?: string;
+  function?: string;
   manager_name?: string;
   role?: string;
   tags?: string;
