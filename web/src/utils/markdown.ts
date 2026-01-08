@@ -4,7 +4,7 @@ export function markdownToPlainText(md: string): string {
   let text = md;
 
   // 1. Headers: # Header -> HEADER
-  text = text.replace(/^#+\s+(.*)$/gm, (match, p1) => p1.toUpperCase());
+  text = text.replace(/^#+\s+(.*)$/gm, (_, p1) => p1.toUpperCase());
 
   // 2. Bold: **text** -> *text* (common email styling)
   text = text.replace(/\*\*(.*?)\*\*/g, '$1');
