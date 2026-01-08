@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, User, Calendar, MessageSquare, Check, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { API_BASE } from '../config';
 import { Person, Interaction } from '../types';
 

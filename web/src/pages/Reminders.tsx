@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Clock, CheckCircle, Search, Filter, Loader } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Clock, CheckCircle, Search, Loader } from 'lucide-react';
 import { Reminder } from '../types';
 import { API_BASE } from '../config';
 import { format } from 'date-fns';
