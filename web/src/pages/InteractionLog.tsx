@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { apiFetch } from '../utils/api';
+import { getLocalDateString } from '../utils/date';
 import { Person, Interaction } from '../types';
 
 export function InteractionLog() {
@@ -17,7 +18,7 @@ export function InteractionLog() {
   // Form State
   const [type, setType] = useState<Interaction['type']>('call');
   const [summary, setSummary] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(getLocalDateString());
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import { ArrowLeft, Phone, Mail, Users, MessageSquare, Clock, CheckCircle, Edit2
 import { Person, Interaction } from '../types';
 import { format } from 'date-fns';
 import { apiFetch } from '../utils/api';
+import { getLocalDateString } from '../utils/date';
 
 export function PersonDetail() {
   const { id } = useParams();
@@ -15,7 +16,7 @@ export function PersonDetail() {
   const [showInteractionForm, setShowInteractionForm] = useState(false);
   const [interactionType, setInteractionType] = useState<Interaction['type']>('call');
   const [interactionSummary, setInteractionSummary] = useState('');
-  const [interactionDate, setInteractionDate] = useState(new Date().toISOString().split('T')[0]);
+  const [interactionDate, setInteractionDate] = useState(getLocalDateString());
 
   // Editing Interaction State
   const [editingInteractionId, setEditingInteractionId] = useState<number | null>(null);
@@ -58,7 +59,7 @@ export function PersonDetail() {
     
     setShowInteractionForm(false);
     setInteractionSummary('');
-    setInteractionDate(new Date().toISOString().split('T')[0]); // Reset to today
+    setInteractionDate(getLocalDateString()); // Reset to today
     fetchPerson();
   };
 
