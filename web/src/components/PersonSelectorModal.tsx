@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Search, Building, Briefcase, Filter, X, MapPin, Check } from 'lucide-react';
+import { Search, Building, Briefcase, X, MapPin, Check } from 'lucide-react';
 import { Person } from '../types';
 import { apiFetch } from '../utils/api';
 
