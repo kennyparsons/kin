@@ -8,6 +8,7 @@ export interface Person {
   tags?: string;
   metadata?: string; // JSON string
   frequency_days?: number;
+  notes?: string;
   last_interaction?: number;
   created_at?: number;
   updated_at?: number;

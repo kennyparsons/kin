@@ -192,11 +192,11 @@ app.get('/api/people/:id', async (c) => {
 
 app.post('/api/people', async (c) => {
   const body = await c.req.json()
-  const { name, email, company, manager_name, role, tags, metadata, frequency_days } = body
+  const { name, email, company, manager_name, role, tags, metadata, frequency_days, notes } = body
   
   const result = await c.env.DB.prepare(
-    `INSERT INTO people (name, email, company, manager_name, role, tags, metadata, frequency_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), frequency_days || null).run()
+    `INSERT INTO people (name, email, company, manager_name, role, tags, metadata, frequency_days, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), frequency_days || null, notes || null).run()
   
   return c.json({ success: true, id: result.meta.last_row_id }, 201)
 })
@@ -204,11 +204,11 @@ app.post('/api/people', async (c) => {
 app.put('/api/people/:id', async (c) => {
   const id = c.req.param('id')
   const body = await c.req.json()
-  const { name, email, company, manager_name, role, tags, metadata, frequency_days } = body
+  const { name, email, company, manager_name, role, tags, metadata, frequency_days, notes } = body
 
   await c.env.DB.prepare(
-    `UPDATE people SET name = ?, email = ?, company = ?, manager_name = ?, role = ?, tags = ?, metadata = ?, frequency_days = ?, updated_at = unixepoch() WHERE id = ?`
-  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), frequency_days || null, id).run()
+    `UPDATE people SET name = ?, email = ?, company = ?, manager_name = ?, role = ?, tags = ?, metadata = ?, frequency_days = ?, notes = ?, updated_at = unixepoch() WHERE id = ?`
+  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), frequency_days || null, notes || null, id).run()
 
   return c.json({ success: true })
 })

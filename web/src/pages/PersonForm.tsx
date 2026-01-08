@@ -17,7 +17,8 @@ export function PersonForm() {
     manager_name: '',
     role: '',
     tags: '',
-    frequency_days: undefined
+    frequency_days: undefined,
+    notes: ''
   });
   
   const [metadataFields, setMetadataFields] = useState<{key: string, value: string}[]>([]);
@@ -230,6 +231,16 @@ export function PersonForm() {
               <option value="180">Every 6 Months</option>
               <option value="365">Every Year</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <textarea 
+              value={formData.notes || ''}
+              onChange={e => setFormData({...formData, notes: e.target.value})}
+              placeholder="Private notes about this person..."
+              className="w-full rounded-lg border-gray-300 border p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none min-h-[100px]"
+            />
           </div>
 
           {/* Metadata */}

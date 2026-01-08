@@ -360,6 +360,15 @@ export function PersonDetail() {
             </div>
           </div>
 
+          {person.notes && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Notes</h2>
+              <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
+                {person.notes}
+              </p>
+            </div>
+          )}
+
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Metadata</h2>
             <dl className="space-y-3 text-sm">
