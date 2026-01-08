@@ -1,24 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Person } from '../types';
-import { Plus, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { API_BASE } from '../config';
+import { Plus, Search } from 'lucide-react';
+import { Person } from '../types';
+import { apiFetch } from '../utils/api';
 
 export function PeopleList() {
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/people`, { credentials: 'include' })
+    apiFetch('/api/people')
       .then(res => res.json())
-      .then(data => {
-        setPeople(data as Person[]);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      .then(setPeople)
+      .finally(() => setLoading(false));
   }, []);
 
   return (

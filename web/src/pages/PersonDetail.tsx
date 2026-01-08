@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, Mail, Users, MessageSquare, Clock, CheckCircle, Edit2, X, Save } from 'lucide-react';
 import { Person, Interaction } from '../types';
 import { format } from 'date-fns';
-import { API_BASE } from '../config';
+import { apiFetch } from '../utils/api';
 
 export function PersonDetail() {
   const { id } = useParams();
@@ -29,7 +29,7 @@ export function PersonDetail() {
   const [reminderDate, setReminderDate] = useState('');
 
   const fetchPerson = () => {
-    fetch(`${API_BASE}/api/people/${id}`, { credentials: 'include' })
+    apiFetch(`/api/people/${id}`)
       .then(res => res.json())
       .then(data => {
         setPerson(data);
@@ -46,10 +46,8 @@ export function PersonDetail() {
     e.preventDefault();
     if (!id) return;
     
-    await fetch(`${API_BASE}/api/interactions`, {
+    await apiFetch('/api/interactions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({
         person_id: id,
         type: interactionType,
@@ -81,10 +79,8 @@ export function PersonDetail() {
     e.preventDefault();
     if (!editingInteractionId) return;
 
-    await fetch(`${API_BASE}/api/interactions/${editingInteractionId}`, {
+    await apiFetch(`/api/interactions/${editingInteractionId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({
         type: editInteractionType,
         summary: editInteractionSummary,
@@ -100,10 +96,8 @@ export function PersonDetail() {
     e.preventDefault();
     if (!id) return;
     
-    await fetch(`${API_BASE}/api/reminders`, {
+    await apiFetch('/api/reminders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({
         person_id: id,
         title: reminderTitle,
@@ -118,10 +112,8 @@ export function PersonDetail() {
   };
 
   const toggleReminderStatus = async (reminderId: number, currentStatus: string) => {
-    await fetch(`${API_BASE}/api/reminders/${reminderId}/status`, {
+    await apiFetch(`/api/reminders/${reminderId}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({
         status: currentStatus === 'pending' ? 'done' : 'pending'
       })

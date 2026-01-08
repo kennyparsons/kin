@@ -60,11 +60,14 @@ app.post('/auth/login', async (c) => {
     maxAge: 60 * 60 * 24 * 7,
   })
 
-  return c.json({ success: true, user: { email: user.email } })
+  return c.json({ success: true, token, user: { email: user.email } })
 })
 
 app.get('/auth/me', async (c) => {
-  const token = getCookie(c, 'kin_session')
+  const cookieToken = getCookie(c, 'kin_session')
+  const headerToken = c.req.header('Authorization')?.replace('Bearer ', '')
+  const token = cookieToken || headerToken
+
   if (!token) return c.json({ authenticated: false }, 401)
   
   try {
@@ -83,7 +86,10 @@ app.post('/auth/logout', (c) => {
 // --- Middleware ---
 
 app.use('/api/*', async (c, next) => {
-  const token = getCookie(c, 'kin_session')
+  const cookieToken = getCookie(c, 'kin_session')
+  const headerToken = c.req.header('Authorization')?.replace('Bearer ', '')
+  const token = cookieToken || headerToken
+
   if (!token) return c.json({ error: 'Unauthorized' }, 401)
   
   try {

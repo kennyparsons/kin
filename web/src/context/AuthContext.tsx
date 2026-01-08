@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { API_BASE } from '../config';
+import { apiFetch } from '../utils/api';
 
 interface User {
   email: string;
@@ -24,12 +24,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
+      const res = await apiFetch('/auth/me');
       if (res.ok) {
         const data = await res.json();
         if (data.authenticated) {
           setUser(data.user);
         }
+      } else {
+        // If 401, clear token
+        localStorage.removeItem('kin_token');
       }
     } catch (err) {
       console.error("Auth check failed", err);
@@ -39,10 +42,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, pass: string) => {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const res = await apiFetch('/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ email, password: pass })
     });
 
@@ -51,11 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     const data = await res.json();
+    localStorage.setItem('kin_token', data.token);
     setUser(data.user);
   };
 
   const logout = async () => {
-    await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+    await apiFetch('/auth/logout', { method: 'POST' });
+    localStorage.removeItem('kin_token');
     setUser(null);
   };
 

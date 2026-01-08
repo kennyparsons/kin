@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Clock, CheckCircle, Search, Loader } from 'lucide-react';
 import { Reminder } from '../types';
-import { API_BASE } from '../config';
+import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 
@@ -26,7 +26,7 @@ export function Reminders() {
     if (debouncedSearch) params.append('search', debouncedSearch);
 
     try {
-      const res = await fetch(`${API_BASE}/api/reminders?${params.toString()}`, { credentials: 'include' });
+      const res = await apiFetch(`/api/reminders?${params.toString()}`);
       const data = await res.json();
       setReminders(data);
     } catch (err) {
@@ -46,10 +46,8 @@ export function Reminders() {
     // Optimistic update
     setReminders(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
 
-    await fetch(`${API_BASE}/api/reminders/${id}/status`, {
+    await apiFetch(`/api/reminders/${id}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ status: newStatus })
     });
 

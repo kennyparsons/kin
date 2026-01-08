@@ -1,41 +1,28 @@
 import { useEffect, useState } from 'react';
+import { Clock, CheckCircle, UserPlus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Clock, UserPlus, CheckCircle, ArrowRight } from 'lucide-react';
+import { Reminder } from '../types';
+import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
-import { Reminder, Person } from '../types';
-import { API_BASE } from '../config';
-
-interface DashboardData {
-  reminders: (Reminder & { person_name: string })[];
-  stalePeople: (Person & { last_interaction: number | null })[];
-}
 
 export function Dashboard() {
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [data, setData] = useState<{ reminders: Reminder[], stalePeople: any[] }>({ reminders: [], stalePeople: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/dashboard`, { credentials: 'include' })
+    apiFetch('/api/dashboard')
       .then(res => res.json())
-      .then(data => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      .then(setData)
+      .finally(() => setLoading(false));
   }, []);
 
   const toggleReminder = async (id: number, currentStatus: string) => {
-    await fetch(`${API_BASE}/api/reminders/${id}/status`, {
+    await apiFetch(`/api/reminders/${id}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ status: currentStatus === 'pending' ? 'done' : 'pending' })
     });
     // Refresh data
-    const res = await fetch(`${API_BASE}/api/dashboard`, { credentials: 'include' });
+    const res = await apiFetch('/api/dashboard');
     const newData = await res.json();
     setData(newData);
   };
