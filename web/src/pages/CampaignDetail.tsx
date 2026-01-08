@@ -5,6 +5,7 @@ import { Campaign, Person, CampaignRecipient } from '../types';
 import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
 import { PersonSelectorModal } from '../components/PersonSelectorModal';
+import { markdownToPlainText } from '../utils/markdown';
 
 export function CampaignDetail() {
   const { id } = useParams();
@@ -93,8 +94,9 @@ export function CampaignDetail() {
     }
 
     // 1. Generate Gmail Link
-    const firstName = (recipient.name || '').split(' ')[0];
-    const personalizedBody = body.replace(/{name}/g, firstName);
+    const firstName = (recipient.name || '').trim().split(/\s+/)[0];
+    const cleanBody = markdownToPlainText(body);
+    const personalizedBody = cleanBody.replace(/{name}/g, firstName);
     
     // Use encodeURIComponent to handle special characters, newlines, etc.
     // Gmail URL format: https://mail.google.com/mail/?view=cm&fs=1&to=...&su=...&body=...
