@@ -4,7 +4,7 @@ import { ArrowLeft, Phone, Mail, Users, MessageSquare, Clock, CheckCircle, Edit2
 import { Person, Interaction } from '../types';
 import { format } from 'date-fns';
 import { apiFetch } from '../utils/api';
-import { getLocalDateString } from '../utils/date';
+import { getLocalDateString, parseLocalDate } from '../utils/date';
 
 export function PersonDetail() {
   const { id } = useParams();
@@ -53,7 +53,7 @@ export function PersonDetail() {
         person_id: id,
         type: interactionType,
         summary: interactionSummary,
-        date: interactionDate ? Math.floor(new Date(interactionDate).getTime() / 1000) : Math.floor(Date.now() / 1000)
+        date: interactionDate ? Math.floor(parseLocalDate(interactionDate).getTime() / 1000) : Math.floor(Date.now() / 1000)
       })
     });
     
@@ -85,7 +85,7 @@ export function PersonDetail() {
       body: JSON.stringify({
         type: editInteractionType,
         summary: editInteractionSummary,
-        date: Math.floor(new Date(editInteractionDate).getTime() / 1000)
+        date: Math.floor(parseLocalDate(editInteractionDate).getTime() / 1000)
       })
     });
 
@@ -102,7 +102,7 @@ export function PersonDetail() {
       body: JSON.stringify({
         person_id: id,
         title: reminderTitle,
-        due_date: reminderDate ? Math.floor(new Date(reminderDate).getTime() / 1000) : null
+        due_date: reminderDate ? Math.floor(parseLocalDate(reminderDate).getTime() / 1000) : null
       })
     });
     

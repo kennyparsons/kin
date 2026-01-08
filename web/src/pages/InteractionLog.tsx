@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { apiFetch } from '../utils/api';
-import { getLocalDateString } from '../utils/date';
+import { getLocalDateString, parseLocalDate } from '../utils/date';
 import { Person, Interaction } from '../types';
 
 export function InteractionLog() {
@@ -65,7 +65,7 @@ export function InteractionLog() {
           person_id: selectedPerson.id,
           type,
           summary,
-          date: Math.floor(new Date(date).getTime() / 1000)
+          date: Math.floor(parseLocalDate(date).getTime() / 1000)
         })
       });
       navigate(`/people/${selectedPerson.id}`);
