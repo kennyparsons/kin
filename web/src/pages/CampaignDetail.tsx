@@ -6,6 +6,7 @@ import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
 import { PersonSelectorModal } from '../components/PersonSelectorModal';
 import { markdownToPlainText } from '../utils/markdown';
+import { marked } from 'marked';
 
 export function CampaignDetail() {
   const { id } = useParams();
@@ -18,6 +19,7 @@ export function CampaignDetail() {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
+  const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
 
   // Selector Modal
   const [showSelector, setShowSelector] = useState(false);
@@ -169,17 +171,45 @@ export function CampaignDetail() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
-                  Body
-                  <span className="text-xs text-gray-400 font-normal italic">Use {'{name}'} for personalization</span>
-                </label>
-                <textarea 
-                  value={body}
-                  onChange={e => setBody(e.target.value)}
-                  placeholder="Hi {name},..."
-                  rows={12}
-                  className="w-full rounded-lg border-gray-300 border p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                />
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Body
+                    <span className="text-xs text-gray-400 font-normal italic ml-2">Use {'{name}'} for personalization</span>
+                  </label>
+                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                    <button
+                      onClick={() => setActiveTab('write')}
+                      className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                        activeTab === 'write' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Write
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('preview')}
+                      className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                        activeTab === 'preview' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Preview
+                    </button>
+                  </div>
+                </div>
+                
+                {activeTab === 'write' ? (
+                  <textarea 
+                    value={body}
+                    onChange={e => setBody(e.target.value)}
+                    placeholder="Hi {name},..."
+                    rows={12}
+                    className="w-full rounded-lg border-gray-300 border p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none font-mono"
+                  />
+                ) : (
+                  <div 
+                    className="w-full rounded-lg border-gray-300 border p-4 text-sm min-h-[300px] max-h-[500px] overflow-y-auto prose prose-sm max-w-none bg-white"
+                    dangerouslySetInnerHTML={{ __html: marked.parse(body.replace(/{name}/g, 'John Doe')) as string }}
+                  />
+                )}
               </div>
             </div>
           </div>
