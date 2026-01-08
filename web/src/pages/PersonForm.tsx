@@ -4,12 +4,16 @@ import { ArrowLeft, Plus, Trash2, Save, AlertTriangle } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 import { Person } from '../types';
 
+const FREQUENCY_PRESETS = [7, 14, 30, 90, 180, 365];
+
 export function PersonForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isCustomFrequency, setIsCustomFrequency] = useState(false);
+  
   const [formData, setFormData] = useState<Partial<Person>>({
     name: '',
     email: '',
@@ -18,7 +22,7 @@ export function PersonForm() {
     manager_name: '',
     role: '',
     tags: '',
-    frequency_days: undefined,
+    frequency_days: isEditing ? undefined : 30, // Default to Monthly for new people
     notes: ''
   });
   
@@ -31,6 +35,11 @@ export function PersonForm() {
         .then(res => res.json())
         .then(data => {
           setFormData(data);
+          
+          // Check if frequency is custom
+          if (data.frequency_days && !FREQUENCY_PRESETS.includes(data.frequency_days)) {
+            setIsCustomFrequency(true);
+          }
           
           try {
             const parsedMeta = typeof data.metadata === 'string' 
@@ -82,6 +91,20 @@ export function PersonForm() {
       alert('Failed to delete person');
       setLoading(false);
       setShowDeleteModal(false);
+    }
+  };
+
+  const handleFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === 'custom') {
+      setIsCustomFrequency(true);
+      // Keep existing value if it's already a number, or default to 30 if undefined
+      if (!formData.frequency_days) {
+        setFormData({ ...formData, frequency_days: 30 });
+      }
+    } else {
+      setIsCustomFrequency(false);
+      setFormData({ ...formData, frequency_days: val ? Number(val) : undefined });
     }
   };
 
@@ -228,19 +251,36 @@ export function PersonForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Keep In Touch Frequency</label>
-            <select 
-              value={formData.frequency_days || ''}
-              onChange={e => setFormData({...formData, frequency_days: e.target.value ? Number(e.target.value) : undefined})}
-              className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-              <option value="">No rule set</option>
-              <option value="7">Every Week</option>
-              <option value="14">Every 2 Weeks</option>
-              <option value="30">Every Month</option>
-              <option value="90">Every Quarter</option>
-              <option value="180">Every 6 Months</option>
-              <option value="365">Every Year</option>
-            </select>
+            <div className="flex gap-2">
+              <select 
+                value={isCustomFrequency ? 'custom' : (formData.frequency_days || '')}
+                onChange={handleFrequencyChange}
+                className="flex-1 rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="">No rule set</option>
+                <option value="7">Every Week</option>
+                <option value="14">Every 2 Weeks</option>
+                <option value="30">Every Month</option>
+                <option value="90">Every Quarter</option>
+                <option value="180">Every 6 Months</option>
+                <option value="365">Every Year</option>
+                <option value="custom">Custom...</option>
+              </select>
+              
+              {isCustomFrequency && (
+                <div className="flex-1 relative">
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.frequency_days || ''}
+                    onChange={e => setFormData({ ...formData, frequency_days: Number(e.target.value) })}
+                    className="w-full rounded-lg border-gray-300 border p-2 pr-12 focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="Days"
+                  />
+                  <span className="absolute right-3 top-2 text-gray-500 text-sm pointer-events-none">days</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div>
