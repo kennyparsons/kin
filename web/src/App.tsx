@@ -29,10 +29,37 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       
-          <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
-          <Route path="/reminders" element={<RequireAuth><Reminders /></RequireAuth>} />
-          <Route path="/interactions" element={<RequireAuth><InteractionLog /></RequireAuth>} />
-          <Route path="/people" element={<RequireAuth><PeopleList /></RequireAuth>} />
+      <Route path="/" element={
+        <RequireAuth>
+          <Layout>
+            <Dashboard />
+          </Layout>
+        </RequireAuth>
+      } />
+      
+      <Route path="/reminders" element={
+        <RequireAuth>
+          <Layout>
+            <Reminders />
+          </Layout>
+        </RequireAuth>
+      } />
+      
+      <Route path="/interactions" element={
+        <RequireAuth>
+          <Layout>
+            <InteractionLog />
+          </Layout>
+        </RequireAuth>
+      } />
+      
+      <Route path="/people" element={
+        <RequireAuth>
+          <Layout>
+            <PeopleList />
+          </Layout>
+        </RequireAuth>
+      } />
       
       <Route path="/people/new" element={
         <RequireAuth>
