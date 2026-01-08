@@ -50,7 +50,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">K</div>
           <span className="text-xl font-bold text-gray-800">Kin</span>
         </div>
-        
         <nav className="space-y-1 flex-1 mt-4 md:mt-0">
           <Link to="/" className={navClass('/')} onClick={closeSidebar}>
             <Home size={20} />
