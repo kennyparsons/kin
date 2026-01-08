@@ -35,9 +35,9 @@ A personal relationship manager built on the Cloudflare Stack.
     ```
 
 3.  **Initialize Database:**
-    Create the local D1 database tables.
+    Apply migrations to the local database.
     ```bash
-    npx wrangler d1 execute kin-db-prod --local --file=./schema.sql
+    npx wrangler d1 migrations apply kin-db-prod --local
     ```
 
 4.  **Create an Admin User:**
@@ -85,7 +85,7 @@ A personal relationship manager built on the Cloudflare Stack.
 
 2.  **Initialize Schema:**
     ```bash
-    npx wrangler d1 execute kin-db-prod --remote --file=./schema.sql
+    npx wrangler d1 migrations apply kin-db-prod --remote
     ```
 
 3.  **Set Production Secrets:**
