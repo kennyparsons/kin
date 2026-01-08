@@ -15,6 +15,7 @@ export function PersonDetail() {
   const [showInteractionForm, setShowInteractionForm] = useState(false);
   const [interactionType, setInteractionType] = useState<Interaction['type']>('call');
   const [interactionSummary, setInteractionSummary] = useState('');
+  const [interactionDate, setInteractionDate] = useState(new Date().toISOString().split('T')[0]);
 
   // Editing Interaction State
   const [editingInteractionId, setEditingInteractionId] = useState<number | null>(null);
@@ -53,12 +54,13 @@ export function PersonDetail() {
         person_id: id,
         type: interactionType,
         summary: interactionSummary,
-        date: Math.floor(Date.now() / 1000)
+        date: interactionDate ? Math.floor(new Date(interactionDate).getTime() / 1000) : Math.floor(Date.now() / 1000)
       })
     });
     
     setShowInteractionForm(false);
     setInteractionSummary('');
+    setInteractionDate(new Date().toISOString().split('T')[0]); // Reset to today
     fetchPerson();
   };
 
@@ -174,21 +176,30 @@ export function PersonDetail() {
             {showInteractionForm && (
               <form onSubmit={handleInteractionSubmit} className="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200 animate-in fade-in slide-in-from-top-2">
                 <div className="mb-3">
-                  <div className="flex space-x-2 mb-3">
-                    {['call', 'email', 'meeting', 'text', 'other'].map(type => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => setInteractionType(type as any)}
-                        className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors ${
-                          interactionType === type 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-                        }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+                    <div className="flex space-x-2">
+                      {['call', 'email', 'meeting', 'text', 'other'].map(type => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setInteractionType(type as any)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors ${
+                            interactionType === type 
+                              ? 'bg-blue-600 text-white' 
+                              : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                    <input 
+                      type="date"
+                      required
+                      value={interactionDate}
+                      onChange={e => setInteractionDate(e.target.value)}
+                      className="text-xs border rounded p-1.5 outline-none focus:ring-1 focus:ring-blue-500 border-gray-300"
+                    />
                   </div>
                   <textarea 
                     placeholder="What did you talk about?"
