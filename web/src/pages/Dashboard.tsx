@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Clock, CheckCircle, UserPlus, ArrowRight } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Reminder } from '../types';
 import { apiFetch } from '../utils/api';
@@ -53,8 +53,14 @@ export function Dashboard() {
                 <div key={reminder.id} className="flex items-start space-x-3 group">
                   <button 
                     onClick={() => toggleReminder(reminder.id, reminder.status)}
-                    className="mt-0.5 flex-shrink-0 w-5 h-5 rounded border border-gray-300 hover:border-blue-500 flex items-center justify-center transition-colors"
-                  />
+                    className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                      reminder.status === 'done' 
+                        ? 'bg-blue-600 border-blue-600 text-white' 
+                        : 'border-gray-300 hover:border-blue-500'
+                    }`}
+                  >
+                    {reminder.status === 'done' && <CheckCircle size={12} />}
+                  </button>
                   <div>
                     <p className="text-sm font-medium text-gray-800">{reminder.title}</p>
                     <div className="flex items-center space-x-2 text-xs text-gray-500 mt-0.5">
