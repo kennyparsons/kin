@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Users, Home, LogOut } from 'lucide-react';
+import { Users, Home, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   const navClass = (path: string) => 
     `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
@@ -14,20 +15,48 @@ export function Layout({ children }: { children: React.ReactNode }) {
         : 'text-gray-600 hover:bg-gray-100'
     }`;
 
+  const closeSidebar = () => setIsSidebarOpen(false);
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <aside className="w-64 bg-white border-r border-gray-200 p-4 sticky top-0 h-screen flex flex-col">
-        <div className="flex items-center space-x-2 mb-8 px-2">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between sticky top-0 z-30">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">K</div>
+          <span className="text-xl font-bold text-gray-800">Kin</span>
+        </div>
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 text-gray-600 hover:bg-gray-100 rounded-md"
+        >
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Sidebar Overlay (Mobile) */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed md:sticky md:top-0 inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 p-4 flex flex-col h-screen transition-transform duration-200 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="hidden md:flex items-center space-x-2 mb-8 px-2">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">K</div>
           <span className="text-xl font-bold text-gray-800">Kin</span>
         </div>
         
-        <nav className="space-y-1 flex-1">
-          <Link to="/" className={navClass('/')}>
+        <nav className="space-y-1 flex-1 mt-4 md:mt-0">
+          <Link to="/" className={navClass('/')} onClick={closeSidebar}>
             <Home size={20} />
             <span>Dashboard</span>
           </Link>
-          <Link to="/people" className={navClass('/people')}>
+          <Link to="/people" className={navClass('/people')} onClick={closeSidebar}>
             <Users size={20} />
             <span>People</span>
           </Link>
@@ -40,7 +69,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
              </p>
            </div>
            <button 
-             onClick={logout}
+             onClick={() => {
+               closeSidebar();
+               logout();
+             }}
              className="w-full flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors"
            >
              <LogOut size={20} />
@@ -49,7 +81,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       
-      <main className="flex-1 p-8 overflow-y-auto">
+      {/* Main Content */}
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
         <div className="max-w-5xl mx-auto">
           {children}
         </div>
