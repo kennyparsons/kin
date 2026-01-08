@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Plus, Trash2, Save, AlertTriangle } from 'lucide-react';
+import { apiFetch } from '../utils/api';
 import { Person } from '../types';
-import { API_BASE } from '../config';
 
 export function PersonForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [formData, setFormData] = useState<Partial<Person>>({
     name: '',
     email: '',
@@ -23,7 +24,7 @@ export function PersonForm() {
   useEffect(() => {
     if (isEditing && id) {
       setLoading(true);
-      fetch(`${API_BASE}/api/people/${id}`, { credentials: 'include' })
+      apiFetch(`/api/people/${id}`)
         .then(res => res.json())
         .then(data => {
           setFormData(data);
@@ -68,6 +69,19 @@ export function PersonForm() {
     setMetadataFields(newFields);
   };
 
+  const handleDelete = async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      await apiFetch(`/api/people/${id}`, { method: 'DELETE' });
+      navigate('/people');
+    } catch (err) {
+      alert('Failed to delete person');
+      setLoading(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -86,13 +100,11 @@ export function PersonForm() {
         metadata: metadataObj
       };
 
-      const url = isEditing ? `${API_BASE}/api/people/${id}` : `${API_BASE}/api/people`;
+      const url = isEditing ? `/api/people/${id}` : '/api/people';
       const method = isEditing ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(payload)
       });
 
@@ -112,13 +124,24 @@ export function PersonForm() {
 
   return (
     <div>
-      <div className="flex items-center space-x-4 mb-6">
-        <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-gray-700">
-          <ArrowLeft size={24} />
-        </button>
-        <h1 className="text-2xl font-bold text-gray-900">
-          {isEditing ? 'Edit Person' : 'Add Person'}
-        </h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-gray-700">
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isEditing ? 'Edit Person' : 'Add Person'}
+          </h1>
+        </div>
+        {isEditing && (
+          <button 
+            onClick={() => setShowDeleteModal(true)}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors flex items-center text-sm font-medium"
+          >
+            <Trash2 size={18} className="mr-2" />
+            Delete Person
+          </button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-2xl">
@@ -251,6 +274,39 @@ export function PersonForm() {
 
         </div>
       </form>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center space-x-3 text-red-600 mb-4">
+              <div className="p-2 bg-red-100 rounded-full">
+                <AlertTriangle size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Delete Person?</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete <strong>{formData.name}</strong>? This action cannot be undone and will remove all associated interactions and reminders.
+            </p>
+            
+            <div className="flex justify-end space-x-3">
+              <button 
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+              >
+                Delete Forever
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
