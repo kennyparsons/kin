@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Users, Home, LogOut, Menu, X, Bell, MessageSquarePlus } from 'lucide-react';
+import { Users, Home, LogOut, Menu, X, Bell, MessageSquarePlus, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -10,7 +10,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   
   const navClass = (path: string) => 
     `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-      location.pathname === path 
+      location.pathname === path || (path !== '/' && location.pathname.startsWith(path))
         ? 'bg-blue-100 text-blue-700 font-medium' 
         : 'text-gray-600 hover:bg-gray-100'
     }`;
@@ -63,6 +63,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Link to="/interactions" className={navClass('/interactions')} onClick={closeSidebar}>
             <MessageSquarePlus size={20} />
             <span>Log Interaction</span>
+          </Link>
+          <Link to="/campaigns" className={navClass('/campaigns')} onClick={closeSidebar}>
+            <Send size={20} />
+            <span>Campaigns</span>
           </Link>
           <Link to="/people" className={navClass('/people')} onClick={closeSidebar}>
             <Users size={20} />

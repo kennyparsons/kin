@@ -6,6 +6,8 @@ import { PersonDetail } from './pages/PersonDetail';
 import { PersonForm } from './pages/PersonForm';
 import { Reminders } from './pages/Reminders';
 import { InteractionLog } from './pages/InteractionLog';
+import { CampaignList } from './pages/CampaignList';
+import { CampaignDetail } from './pages/CampaignDetail';
 import { Login } from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -49,6 +51,22 @@ function AppRoutes() {
         <RequireAuth>
           <Layout>
             <InteractionLog />
+          </Layout>
+        </RequireAuth>
+      } />
+
+      <Route path="/campaigns" element={
+        <RequireAuth>
+          <Layout>
+            <CampaignList />
+          </Layout>
+        </RequireAuth>
+      } />
+
+      <Route path="/campaigns/:id" element={
+        <RequireAuth>
+          <Layout>
+            <CampaignDetail />
           </Layout>
         </RequireAuth>
       } />

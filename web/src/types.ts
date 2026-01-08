@@ -35,3 +35,22 @@ export interface Reminder {
   due_date?: number;
   status: 'pending' | 'done';
 }
+
+export interface Campaign {
+  id: number;
+  title: string;
+  subject_template: string;
+  body_template: string;
+  created_at: number;
+  recipients?: CampaignRecipient[];
+}
+
+export interface CampaignRecipient {
+  id: number;
+  campaign_id: number;
+  person_id: number;
+  status: 'pending' | 'sent';
+  sent_at?: number;
+  name?: string; // Joined from API
+  email?: string; // Joined from API
+}

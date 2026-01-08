@@ -274,4 +274,85 @@ app.patch('/api/reminders/:id/status', async (c) => {
   return c.json({ success: true })
 })
 
+// --- Campaign Routes ---
+
+app.get('/api/campaigns', async (c) => {
+  const { results } = await c.env.DB.prepare('SELECT * FROM campaigns ORDER BY created_at DESC').all()
+  return c.json(results)
+})
+
+app.post('/api/campaigns', async (c) => {
+  const { title, subject_template, body_template } = await c.req.json()
+  const result = await c.env.DB.prepare(
+    'INSERT INTO campaigns (title, subject_template, body_template) VALUES (?, ?, ?)'
+  ).bind(title, subject_template || '', body_template || '').run()
+  return c.json({ success: true, id: result.meta.last_row_id }, 201)
+})
+
+app.get('/api/campaigns/:id', async (c) => {
+  const id = c.req.param('id')
+  const campaign = await c.env.DB.prepare('SELECT * FROM campaigns WHERE id = ?').bind(id).first()
+  if (!campaign) return c.notFound()
+
+  const recipients = await c.env.DB.prepare(`
+    SELECT cr.*, p.name, p.email 
+    FROM campaign_recipients cr 
+    JOIN people p ON cr.person_id = p.id 
+    WHERE cr.campaign_id = ?
+  `).bind(id).all()
+
+  return c.json({ ...campaign, recipients: recipients.results })
+})
+
+app.put('/api/campaigns/:id', async (c) => {
+  const id = c.req.param('id')
+  const { title, subject_template, body_template } = await c.req.json()
+  await c.env.DB.prepare(
+    'UPDATE campaigns SET title = ?, subject_template = ?, body_template = ? WHERE id = ?'
+  ).bind(title, subject_template, body_template, id).run()
+  return c.json({ success: true })
+})
+
+app.delete('/api/campaigns/:id', async (c) => {
+  const id = c.req.param('id')
+  await c.env.DB.prepare('DELETE FROM campaigns WHERE id = ?').bind(id).run()
+  return c.json({ success: true })
+})
+
+app.post('/api/campaigns/:id/recipients', async (c) => {
+  const campaign_id = c.req.param('id')
+  const { person_ids } = await c.req.json() // Array of IDs
+
+  const statements = person_ids.map((pid: number) => 
+    c.env.DB.prepare('INSERT OR IGNORE INTO campaign_recipients (campaign_id, person_id) VALUES (?, ?)').bind(campaign_id, pid)
+  )
+  
+  await c.env.DB.batch(statements)
+  return c.json({ success: true })
+})
+
+app.delete('/api/campaigns/:id/recipients/:person_id', async (c) => {
+  const { id, person_id } = c.req.param()
+  await c.env.DB.prepare('DELETE FROM campaign_recipients WHERE campaign_id = ? AND person_id = ?').bind(id, person_id).run()
+  return c.json({ success: true })
+})
+
+app.post('/api/campaigns/:id/send/:person_id', async (c) => {
+  const { id, person_id } = c.req.param()
+  const campaign = await c.env.DB.prepare('SELECT title FROM campaigns WHERE id = ?').bind(id).first()
+  if (!campaign) return c.notFound()
+
+  // 1. Update recipient status
+  await c.env.DB.prepare(
+    "UPDATE campaign_recipients SET status = 'sent', sent_at = unixepoch() WHERE campaign_id = ? AND person_id = ?"
+  ).bind(id, person_id).run()
+
+  // 2. Log interaction
+  await c.env.DB.prepare(
+    "INSERT INTO interactions (person_id, type, summary, date) VALUES (?, 'email', ?, unixepoch())"
+  ).bind(person_id, `Sent campaign email: ${campaign.title}`).run()
+
+  return c.json({ success: true })
+})
+
 export default app
