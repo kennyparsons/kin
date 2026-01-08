@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, UserPlus, Mail, CheckCircle, X, Search } from 'lucide-react';
+import { ArrowLeft, Save, UserPlus, Mail, CheckCircle, X, Search, ListPlus } from 'lucide-react';
 import { Campaign, Person, CampaignRecipient } from '../types';
 import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
+import { PersonSelectorModal } from '../components/PersonSelectorModal';
 
 export function CampaignDetail() {
   const { id } = useParams();
@@ -17,9 +18,8 @@ export function CampaignDetail() {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
 
-  // Recipient Search
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<Person[]>([]);
+  // Selector Modal
+  const [showSelector, setShowSelector] = useState(false);
 
   useEffect(() => {
     if (id) fetchCampaign();
@@ -59,31 +59,18 @@ export function CampaignDetail() {
     }
   };
 
-  // Autocomplete search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchTerm.length > 1) {
-        apiFetch(`/api/people/search?q=${encodeURIComponent(searchTerm)}`)
-          .then(res => res.json())
-          .then(setSearchResults);
-      } else {
-        setSearchResults([]);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+  const addRecipients = async (selectedPeople: Person[]) => {
+    const ids = selectedPeople.map(p => p.id);
+    if (ids.length === 0) return;
 
-  const addRecipient = async (person: Person) => {
     try {
       await apiFetch(`/api/campaigns/${id}/recipients`, {
         method: 'POST',
-        body: JSON.stringify({ person_ids: [person.id] })
+        body: JSON.stringify({ person_ids: ids })
       });
-      setSearchTerm('');
-      setSearchResults([]);
       fetchCampaign();
     } catch (err) {
-      alert('Failed to add recipient');
+      alert('Failed to add recipients');
     }
   };
 
@@ -197,35 +184,15 @@ export function CampaignDetail() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
               <UserPlus className="mr-2 text-blue-600" size={20} />
-              Add Recipients
+              Recipients
             </h2>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search size={16} className="text-gray-400" />
-              </div>
-              <input 
-                type="text" 
-                placeholder="Search people..." 
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-              
-              {searchResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-                  {searchResults.map(person => (
-                    <button
-                      key={person.id}
-                      onClick={() => addRecipient(person)}
-                      className="w-full text-left px-4 py-2 hover:bg-blue-50 border-b border-gray-50 last:border-0"
-                    >
-                      <p className="text-sm font-medium text-gray-900">{person.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{person.company || person.email}</p>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <button 
+              onClick={() => setShowSelector(true)}
+              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center font-medium"
+            >
+              <ListPlus size={20} className="mr-2" />
+              Add From List...
+            </button>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -273,6 +240,12 @@ export function CampaignDetail() {
           </div>
         </div>
       </div>
+
+      <PersonSelectorModal 
+        isOpen={showSelector}
+        onClose={() => setShowSelector(false)}
+        onSelect={addRecipients}
+      />
     </div>
   );
 }
