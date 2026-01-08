@@ -113,20 +113,20 @@ app.get('/api/dashboard', async (c) => {
     LIMIT 10
   `).all()
 
-  const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60)
-  const stalePeople = await c.env.DB.prepare(`
+  const overduePeople = await c.env.DB.prepare(`
     SELECT p.*, MAX(i.date) as last_interaction
     FROM people p
     LEFT JOIN interactions i ON p.id = i.person_id
+    WHERE p.frequency_days IS NOT NULL
     GROUP BY p.id
-    HAVING last_interaction < ? OR last_interaction IS NULL
-    ORDER BY last_interaction ASC
-    LIMIT 5
-  `).bind(thirtyDaysAgo).all()
+    HAVING (unixepoch() - COALESCE(MAX(i.date), 0)) > (p.frequency_days * 86400)
+    ORDER BY (unixepoch() - COALESCE(MAX(i.date), 0)) DESC
+    LIMIT 10
+  `).all()
 
   return c.json({
     reminders: reminders.results,
-    stalePeople: stalePeople.results
+    stalePeople: overduePeople.results
   })
 })
 
@@ -158,7 +158,13 @@ app.get('/api/reminders', async (c) => {
 })
 
 app.get('/api/people', async (c) => {
-  const { results } = await c.env.DB.prepare('SELECT * FROM people ORDER BY updated_at DESC').all()
+  const { results } = await c.env.DB.prepare(`
+    SELECT p.*, MAX(i.date) as last_interaction
+    FROM people p
+    LEFT JOIN interactions i ON p.id = i.person_id
+    GROUP BY p.id
+    ORDER BY updated_at DESC
+  `).all()
   return c.json(results)
 })
 
@@ -186,11 +192,11 @@ app.get('/api/people/:id', async (c) => {
 
 app.post('/api/people', async (c) => {
   const body = await c.req.json()
-  const { name, email, company, manager_name, role, tags, metadata } = body
+  const { name, email, company, manager_name, role, tags, metadata, frequency_days } = body
   
   const result = await c.env.DB.prepare(
-    `INSERT INTO people (name, email, company, manager_name, role, tags, metadata) VALUES (?, ?, ?, ?, ?, ?, ?)`
-  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {})).run()
+    `INSERT INTO people (name, email, company, manager_name, role, tags, metadata, frequency_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), frequency_days || null).run()
   
   return c.json({ success: true, id: result.meta.last_row_id }, 201)
 })
@@ -198,11 +204,11 @@ app.post('/api/people', async (c) => {
 app.put('/api/people/:id', async (c) => {
   const id = c.req.param('id')
   const body = await c.req.json()
-  const { name, email, company, manager_name, role, tags, metadata } = body
+  const { name, email, company, manager_name, role, tags, metadata, frequency_days } = body
 
   await c.env.DB.prepare(
-    `UPDATE people SET name = ?, email = ?, company = ?, manager_name = ?, role = ?, tags = ?, metadata = ?, updated_at = unixepoch() WHERE id = ?`
-  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), id).run()
+    `UPDATE people SET name = ?, email = ?, company = ?, manager_name = ?, role = ?, tags = ?, metadata = ?, frequency_days = ?, updated_at = unixepoch() WHERE id = ?`
+  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), frequency_days || null, id).run()
 
   return c.json({ success: true })
 })

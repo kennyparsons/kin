@@ -17,6 +17,7 @@ export function PersonForm() {
     manager_name: '',
     role: '',
     tags: '',
+    frequency_days: undefined
   });
   
   const [metadataFields, setMetadataFields] = useState<{key: string, value: string}[]>([]);
@@ -212,6 +213,23 @@ export function PersonForm() {
                 className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Keep In Touch Frequency</label>
+            <select 
+              value={formData.frequency_days || ''}
+              onChange={e => setFormData({...formData, frequency_days: e.target.value ? Number(e.target.value) : undefined})}
+              className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              <option value="">No rule set</option>
+              <option value="7">Every Week</option>
+              <option value="14">Every 2 Weeks</option>
+              <option value="30">Every Month</option>
+              <option value="90">Every Quarter</option>
+              <option value="180">Every 6 Months</option>
+              <option value="365">Every Year</option>
+            </select>
           </div>
 
           {/* Metadata */}

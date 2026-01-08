@@ -36,88 +36,70 @@ export function Dashboard() {
         <p className="text-gray-500">Here's what's happening in your network.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        {/* Reminders Section */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2 text-gray-900">
-            <Clock className="text-blue-600" size={20} />
-            <h2 className="text-xl font-bold">Upcoming Reminders</h2>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-100">
-            {data?.reminders && data.reminders.length > 0 ? (
-              data.reminders.map(reminder => (
-                <div key={reminder.id} className="p-4 flex items-center justify-between group">
-                  <div className="flex items-start space-x-3">
-                    <button 
-                      onClick={() => toggleReminder(reminder.id, reminder.status)}
-                      className="mt-1 w-5 h-5 rounded border border-gray-300 flex items-center justify-center hover:border-blue-500 transition-colors"
-                    >
-                      {reminder.status === 'done' && <CheckCircle size={12} className="text-blue-600" />}
-                    </button>
-                    <div>
-                      <p className="font-medium text-gray-900">{reminder.title}</p>
-                      <Link to={`/people/${reminder.person_id}`} className="text-sm text-blue-600 hover:underline">
-                        {reminder.person_name}
-                      </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <Clock className="mr-2 text-blue-600" size={20} />
+            Pending Reminders
+          </h2>
+          {/* ... reminders code ... */}
+          {loading ? (
+             <p>Loading...</p>
+          ) : data.reminders.length === 0 ? (
+             <p className="text-gray-500 text-sm">No pending reminders.</p>
+          ) : (
+            <div className="space-y-3">
+              {data.reminders.map(reminder => (
+                <div key={reminder.id} className="flex items-start space-x-3 group">
+                  <button 
+                    onClick={() => toggleReminder(reminder.id, reminder.status)}
+                    className="mt-0.5 flex-shrink-0 w-5 h-5 rounded border border-gray-300 hover:border-blue-500 flex items-center justify-center transition-colors"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">{reminder.title}</p>
+                    <div className="flex items-center space-x-2 text-xs text-gray-500 mt-0.5">
+                       {reminder.person_name && <span>For: {reminder.person_name}</span>}
+                       {reminder.due_date && (
+                         <span className={reminder.due_date * 1000 < Date.now() ? 'text-red-500' : ''}>
+                           {format(new Date(reminder.due_date * 1000), 'MMM d')}
+                         </span>
+                       )}
                     </div>
                   </div>
-                  {reminder.due_date && (
-                    <span className="text-xs font-medium px-2 py-1 bg-red-50 text-red-600 rounded">
-                      {format(new Date(reminder.due_date * 1000), 'MMM d')}
-                    </span>
-                  )}
                 </div>
-              ))
-            ) : (
-              <div className="p-8 text-center text-gray-500">
-                All caught up! No pending reminders.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Keep in Touch Section */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2 text-gray-900">
-            <UserPlus className="text-orange-500" size={20} />
-            <h2 className="text-xl font-bold">Keep in Touch</h2>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-100">
-            {data?.stalePeople && data.stalePeople.length > 0 ? (
-              data.stalePeople.map(person => (
-                <div key={person.id} className="p-4 flex items-center justify-between group">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{person.name}</h3>
-                    <p className="text-xs text-gray-500">
-                      {person.last_interaction 
-                        ? `Last spoke ${format(new Date(person.last_interaction * 1000), 'MMM d')}`
-                        : 'No interactions yet'}
-                    </p>
-                  </div>
-                  <Link 
-                    to={`/people/${person.id}`} 
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all"
-                  >
-                    <ArrowRight size={18} />
-                  </Link>
-                </div>
-              ))
-            ) : (
-              <div className="p-8 text-center text-gray-500">
-                You're doing great! Everyone is warmed up.
-              </div>
-            )}
-            <div className="p-4 bg-gray-50">
-              <Link to="/people" className="text-sm text-gray-600 font-medium hover:text-gray-900 flex items-center justify-center">
-                View All People <ArrowRight size={14} className="ml-1" />
-              </Link>
+              ))}
             </div>
-          </div>
+          )}
         </div>
 
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <AlertCircle className="mr-2 text-orange-500" size={20} />
+            Needs Attention
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">People you are overdue to contact.</p>
+          
+          <div className="space-y-4">
+            {data.stalePeople.map((person: any) => (
+              <div key={person.id} className="flex justify-between items-center">
+                <div>
+                  <Link to={`/people/${person.id}`} className="font-medium text-gray-900 hover:text-blue-600">
+                    {person.name}
+                  </Link>
+                  <p className="text-xs text-gray-500">
+                    Last interaction: {person.last_interaction ? format(new Date(person.last_interaction * 1000), 'MMM d, yyyy') : 'Never'}
+                  </p>
+                </div>
+                <Link to={`/people/${person.id}`} className="text-xs bg-orange-50 text-orange-700 px-3 py-1 rounded-full hover:bg-orange-100">
+                  Connect
+                </Link>
+              </div>
+            ))}
+            {data.stalePeople.length === 0 && !loading && (
+              <p className="text-gray-500 text-sm">Everyone is healthy!</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

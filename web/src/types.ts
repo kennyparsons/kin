@@ -7,6 +7,8 @@ export interface Person {
   role?: string;
   tags?: string;
   metadata?: string; // JSON string
+  frequency_days?: number;
+  last_interaction?: number;
   created_at?: number;
   updated_at?: number;
   interactions?: Interaction[];
