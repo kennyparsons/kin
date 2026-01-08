@@ -24,6 +24,7 @@ export interface Interaction {
 export interface Reminder {
   id: number;
   person_id: number;
+  person_name?: string; // Joined from API
   title: string;
   due_date?: number;
   status: 'pending' | 'done';

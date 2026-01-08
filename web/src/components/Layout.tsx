@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Users, Home, LogOut, Menu, X } from 'lucide-react';
+import { Users, Home, LogOut, Menu, X, Bell, MessageSquarePlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -55,6 +55,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Link to="/" className={navClass('/')} onClick={closeSidebar}>
             <Home size={20} />
             <span>Dashboard</span>
+          </Link>
+          <Link to="/reminders" className={navClass('/reminders')} onClick={closeSidebar}>
+            <Bell size={20} />
+            <span>Reminders</span>
+          </Link>
+          <Link to="/interactions" className={navClass('/interactions')} onClick={closeSidebar}>
+            <MessageSquarePlus size={20} />
+            <span>Log Interaction</span>
           </Link>
           <Link to="/people" className={navClass('/people')} onClick={closeSidebar}>
             <Users size={20} />

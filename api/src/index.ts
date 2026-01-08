@@ -124,8 +124,46 @@ app.get('/api/dashboard', async (c) => {
   })
 })
 
+app.get('/api/reminders', async (c) => {
+  const status = c.req.query('status') // 'pending' or 'all'
+  const search = c.req.query('search')
+  
+  let query = `
+    SELECT r.*, p.name as person_name 
+    FROM reminders r 
+    JOIN people p ON r.person_id = p.id
+    WHERE 1=1
+  `
+  const params: any[] = []
+
+  if (status !== 'all') {
+    query += ` AND r.status = 'pending'`
+  }
+
+  if (search) {
+    query += ` AND (r.title LIKE ? OR p.name LIKE ?)`
+    params.push(`%${search}%`, `%${search}%`)
+  }
+
+  query += ` ORDER BY r.due_date ASC`
+
+  const { results } = await c.env.DB.prepare(query).bind(...params).all()
+  return c.json(results)
+})
+
 app.get('/api/people', async (c) => {
   const { results } = await c.env.DB.prepare('SELECT * FROM people ORDER BY updated_at DESC').all()
+  return c.json(results)
+})
+
+app.get('/api/people/search', async (c) => {
+  const q = c.req.query('q')
+  if (!q) return c.json([])
+  
+  const { results } = await c.env.DB.prepare(
+    'SELECT id, name, email, company, role FROM people WHERE name LIKE ? OR company LIKE ? LIMIT 10'
+  ).bind(`%${q}%`, `%${q}%`).all()
+  
   return c.json(results)
 })
 
