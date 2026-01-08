@@ -15,7 +15,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/dashboard`)
+    fetch(`${API_BASE}/api/dashboard`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setData(data);
@@ -31,10 +31,11 @@ export function Dashboard() {
     await fetch(`${API_BASE}/api/reminders/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ status: currentStatus === 'pending' ? 'done' : 'pending' })
     });
     // Refresh data
-    const res = await fetch(`${API_BASE}/api/dashboard`);
+    const res = await fetch(`${API_BASE}/api/dashboard`, { credentials: 'include' });
     const newData = await res.json();
     setData(newData);
   };

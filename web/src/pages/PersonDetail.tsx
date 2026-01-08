@@ -28,7 +28,7 @@ export function PersonDetail() {
   const [reminderDate, setReminderDate] = useState('');
 
   const fetchPerson = () => {
-    fetch(`${API_BASE}/api/people/${id}`)
+    fetch(`${API_BASE}/api/people/${id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setPerson(data);
@@ -48,6 +48,7 @@ export function PersonDetail() {
     await fetch(`${API_BASE}/api/interactions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         person_id: id,
         type: interactionType,
@@ -81,6 +82,7 @@ export function PersonDetail() {
     await fetch(`${API_BASE}/api/interactions/${editingInteractionId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         type: editInteractionType,
         summary: editInteractionSummary,
@@ -99,6 +101,7 @@ export function PersonDetail() {
     await fetch(`${API_BASE}/api/reminders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         person_id: id,
         title: reminderTitle,
@@ -116,6 +119,7 @@ export function PersonDetail() {
     await fetch(`${API_BASE}/api/reminders/${reminderId}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         status: currentStatus === 'pending' ? 'done' : 'pending'
       })

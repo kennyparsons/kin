@@ -9,7 +9,7 @@ export function PeopleList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/people`)
+    fetch(`${API_BASE}/api/people`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setPeople(data as Person[]);

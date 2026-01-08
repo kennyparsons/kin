@@ -55,7 +55,7 @@ app.post('/auth/login', async (c) => {
   setCookie(c, 'kin_session', token, {
     httpOnly: true,
     secure: !isLocal,
-    sameSite: 'Lax',
+    sameSite: isLocal ? 'Lax' : 'None',
     path: '/',
     maxAge: 60 * 60 * 24 * 7,
   })

@@ -23,7 +23,7 @@ export function PersonForm() {
   useEffect(() => {
     if (isEditing && id) {
       setLoading(true);
-      fetch(`${API_BASE}/api/people/${id}`)
+      fetch(`${API_BASE}/api/people/${id}`, { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
           setFormData(data);
@@ -92,6 +92,7 @@ export function PersonForm() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
 
