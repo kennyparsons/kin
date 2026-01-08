@@ -208,7 +208,18 @@ app.put('/api/people/:id', async (c) => {
 
   await c.env.DB.prepare(
     `UPDATE people SET name = ?, email = ?, company = ?, manager_name = ?, role = ?, tags = ?, metadata = ?, frequency_days = ?, notes = ?, updated_at = unixepoch() WHERE id = ?`
-  ).bind(name, email, company, manager_name, role, tags, JSON.stringify(metadata || {}), frequency_days || null, notes || null, id).run()
+  ).bind(
+    name, 
+    email || null, 
+    company || null, 
+    manager_name || null, 
+    role || null, 
+    tags || null, 
+    JSON.stringify(metadata || {}), 
+    frequency_days || null, 
+    notes || null, 
+    id
+  ).run()
 
   return c.json({ success: true })
 })
