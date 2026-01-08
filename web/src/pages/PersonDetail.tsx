@@ -384,6 +384,12 @@ export function PersonDetail() {
                   <dd className="text-gray-900 font-medium truncate ml-2">{person.phone}</dd>
                 </div>
               )}
+              {person.location && (
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Location</dt>
+                  <dd className="text-gray-900 font-medium truncate ml-2">{person.location}</dd>
+                </div>
+              )}
               {person.tags && (
                 <div>
                   <dt className="text-gray-500 mb-1">Tags</dt>

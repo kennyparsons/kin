@@ -20,6 +20,7 @@ export function PersonForm() {
     phone: '',
     company: '',
     function: '',
+    location: '',
     manager_name: '',
     role: '',
     tags: '',
@@ -237,6 +238,16 @@ export function PersonForm() {
                 type="text" 
                 value={formData.company || ''}
                 onChange={e => setFormData({...formData, company: e.target.value})}
+                className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <input 
+                type="text" 
+                value={formData.location || ''}
+                onChange={e => setFormData({...formData, location: e.target.value})}
+                placeholder="City, State"
                 className="w-full rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               />
             </div>

@@ -5,6 +5,7 @@ export interface Person {
   phone?: string;
   company?: string;
   function?: string;
+  location?: string;
   manager_name?: string;
   role?: string;
   tags?: string;
