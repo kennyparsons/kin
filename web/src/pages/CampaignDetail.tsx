@@ -93,7 +93,11 @@ export function CampaignDetail() {
     }
 
     // 1. Generate Gmail Link
-    const personalizedBody = body.replace(/{name}/g, recipient.name || '');
+    const firstName = (recipient.name || '').split(' ')[0];
+    const personalizedBody = body.replace(/{name}/g, firstName);
+    
+    // Use encodeURIComponent to handle special characters, newlines, etc.
+    // Gmail URL format: https://mail.google.com/mail/?view=cm&fs=1&to=...&su=...&body=...
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(personalizedBody)}`;
     
     // 2. Open Gmail
