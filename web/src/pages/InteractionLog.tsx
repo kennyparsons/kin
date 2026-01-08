@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
-import { API_BASE } from '../config';
+import { apiFetch } from '../utils/api';
 import { Person, Interaction } from '../types';
 
 export function InteractionLog() {
@@ -24,7 +24,7 @@ export function InteractionLog() {
     const timer = setTimeout(() => {
       if (searchTerm && !selectedPerson) {
         setIsSearching(true);
-        fetch(`${API_BASE}/api/people/search?q=${encodeURIComponent(searchTerm)}`, { credentials: 'include' })
+        apiFetch(`/api/people/search?q=${encodeURIComponent(searchTerm)}`)
           .then(res => res.json())
           .then(data => {
             setSearchResults(data);
@@ -58,10 +58,8 @@ export function InteractionLog() {
     
     setSubmitting(true);
     try {
-      await fetch(`${API_BASE}/api/interactions`, {
+      await apiFetch('/api/interactions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           person_id: selectedPerson.id,
           type,
@@ -146,13 +144,13 @@ export function InteractionLog() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div>
                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-               <div className="flex space-x-2">
+               <div className="flex flex-wrap gap-2">
                  {['call', 'email', 'meeting', 'text', 'other'].map(t => (
                    <button
                      key={t}
                      type="button"
                      onClick={() => setType(t as any)}
-                     className={`px-3 py-2 rounded-lg text-sm font-medium capitalize flex-1 border transition-colors ${
+                     className={`px-3 py-2 rounded-lg text-sm font-medium capitalize border transition-colors ${
                        type === t 
                          ? 'bg-blue-600 text-white border-blue-600' 
                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
