@@ -5,7 +5,6 @@ import { Campaign, Person, CampaignRecipient } from '../types';
 import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
 import { PersonSelectorModal } from '../components/PersonSelectorModal';
-import { markdownToPlainText } from '../utils/markdown';
 import { marked } from 'marked';
 
 export function CampaignDetail() {
