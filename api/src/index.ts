@@ -277,7 +277,12 @@ app.patch('/api/reminders/:id/status', async (c) => {
 // --- Campaign Routes ---
 
 app.get('/api/campaigns', async (c) => {
-  const { results } = await c.env.DB.prepare('SELECT * FROM campaigns ORDER BY created_at DESC').all()
+  const status = c.req.query('status') || 'open'
+  const query = status === 'all' 
+    ? 'SELECT * FROM campaigns ORDER BY created_at DESC'
+    : 'SELECT * FROM campaigns WHERE status = ? ORDER BY created_at DESC'
+  
+  const { results } = await c.env.DB.prepare(query).bind(status === 'all' ? undefined : status).all()
   return c.json(results)
 })
 
@@ -316,6 +321,13 @@ app.put('/api/campaigns/:id', async (c) => {
 app.delete('/api/campaigns/:id', async (c) => {
   const id = c.req.param('id')
   await c.env.DB.prepare('DELETE FROM campaigns WHERE id = ?').bind(id).run()
+  return c.json({ success: true })
+})
+
+app.patch('/api/campaigns/:id/status', async (c) => {
+  const id = c.req.param('id')
+  const { status } = await c.req.json()
+  await c.env.DB.prepare('UPDATE campaigns SET status = ? WHERE id = ?').bind(status, id).run()
   return c.json({ success: true })
 })
 

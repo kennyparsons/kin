@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, UserPlus, Mail, CheckCircle, X, ListPlus } from 'lucide-react';
+import { ArrowLeft, Save, UserPlus, Mail, CheckCircle, X, ListPlus, Archive, RefreshCw, Trash2 } from 'lucide-react';
 import { Campaign, Person, CampaignRecipient } from '../types';
 import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
@@ -58,6 +58,28 @@ export function CampaignDetail() {
       alert('Failed to save campaign');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleStatus = async (status: 'open' | 'completed') => {
+    try {
+      await apiFetch(`/api/campaigns/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      });
+      fetchCampaign();
+    } catch (err) {
+      alert('Failed to update status');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this campaign?')) return;
+    try {
+      await apiFetch(`/api/campaigns/${id}`, { method: 'DELETE' });
+      navigate('/campaigns');
+    } catch (err) {
+      alert('Failed to delete campaign');
     }
   };
 
@@ -129,19 +151,50 @@ export function CampaignDetail() {
   return (
     <div className="max-w-4xl mx-auto pb-20">
       <div className="mb-8">
-        <button onClick={() => navigate('/campaigns')} className="flex items-center text-gray-500 hover:text-gray-700 mb-4 transition-colors">
-          <ArrowLeft size={20} className="mr-1" /> Back to Campaigns
-        </button>
+        <div className="flex justify-between items-center mb-4">
+          <button onClick={() => navigate('/campaigns')} className="flex items-center text-gray-500 hover:text-gray-700 transition-colors">
+            <ArrowLeft size={20} className="mr-1" /> Back to Campaigns
+          </button>
+          <div className="flex space-x-2">
+            {campaign.status === 'open' ? (
+              <button 
+                onClick={() => handleStatus('completed')}
+                className="flex items-center text-gray-600 hover:text-green-600 px-3 py-2 rounded-lg hover:bg-green-50 transition-colors"
+                title="Mark as Completed"
+              >
+                <CheckCircle size={20} className="mr-2" />
+                Complete
+              </button>
+            ) : (
+              <button 
+                onClick={() => handleStatus('open')}
+                className="flex items-center text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                title="Reopen"
+              >
+                <RefreshCw size={20} className="mr-2" />
+                Reopen
+              </button>
+            )}
+            <button 
+              onClick={handleDelete}
+              className="flex items-center text-gray-400 hover:text-red-600 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"
+              title="Delete Campaign"
+            >
+              <Trash2 size={20} />
+            </button>
+          </div>
+        </div>
+        
         <div className="flex justify-between items-center">
           <input 
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="text-3xl font-bold text-gray-900 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none w-full mr-4 transition-all"
+            className={`text-3xl font-bold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none w-full mr-4 transition-all ${campaign.status === 'completed' ? 'text-gray-400 line-through decoration-2' : 'text-gray-900'}`}
           />
           <button 
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex-shrink-0"
           >
             <Save size={18} className="mr-2" />
             {saving ? 'Saving...' : 'Save Template'}

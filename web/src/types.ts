@@ -42,6 +42,7 @@ export interface Campaign {
   subject_template: string;
   body_template: string;
   created_at: number;
+  status: 'open' | 'completed' | 'archived';
   recipients?: CampaignRecipient[];
 }
 
