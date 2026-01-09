@@ -1,55 +1,209 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Users, Home, LogOut, Menu, X, Bell, MessageSquarePlus, Send } from 'lucide-react';
+import { Users, Home, LogOut, Menu, X, Bell, MessageSquarePlus, Send, ChevronDown, PlusCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useProject } from '../context/ProjectContext';
 
 export function Layout({ children }: { children: React.ReactNode }) {
+
   const location = useLocation();
+
   const { user, logout } = useAuth();
+
+  const { projects, currentProjectId, setProjectId, createProject } = useProject();
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
+
   
+
+  const currentProject = projects.find(p => p.id === currentProjectId) || { name: 'Loading...' };
+
+
+
+  const handleCreateProject = () => {
+
+    const name = prompt("Enter new project name:");
+
+    if (name) {
+
+      createProject(name);
+
+      setIsProjectMenuOpen(false);
+
+    }
+
+  };
+
+
+
   const navClass = (path: string) => 
+
     `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+
       location.pathname === path || (path !== '/' && location.pathname.startsWith(path))
+
         ? 'bg-blue-100 text-blue-700 font-medium' 
+
         : 'text-gray-600 hover:bg-gray-100'
+
     }`;
+
+
 
   const closeSidebar = () => setIsSidebarOpen(false);
 
+
+
   return (
+
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+
       {/* Mobile Header */}
+
       <div className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between sticky top-0 z-30">
+
         <div className="flex items-center space-x-2">
+
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">K</div>
+
           <span className="text-xl font-bold text-gray-800">Kin</span>
+
         </div>
+
         <button 
+
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+
           className="p-2 text-gray-600 hover:bg-gray-100 rounded-md"
+
         >
+
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+
         </button>
+
       </div>
 
+
+
       {/* Sidebar Overlay (Mobile) */}
+
       {isSidebarOpen && (
+
         <div 
+
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+
           onClick={closeSidebar}
+
         />
+
       )}
 
+
+
       {/* Sidebar */}
+
       <aside className={`
+
         fixed md:sticky md:top-0 inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 p-4 flex flex-col h-screen transition-transform duration-200 ease-in-out
+
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+
       `}>
-        <div className="hidden md:flex items-center space-x-2 mb-8 px-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">K</div>
-          <span className="text-xl font-bold text-gray-800">Kin</span>
+
+        <div className="relative mb-6 px-2">
+
+          <button 
+
+            onClick={() => setIsProjectMenuOpen(!isProjectMenuOpen)}
+
+            className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 transition-colors"
+
+          >
+
+            <div className="flex items-center space-x-2">
+
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
+
+                {currentProject.name.charAt(0).toUpperCase()}
+
+              </div>
+
+              <div className="text-left">
+
+                <p className="text-sm font-bold text-gray-900 leading-none">{currentProject.name}</p>
+
+                <p className="text-xs text-gray-500">Project</p>
+
+              </div>
+
+            </div>
+
+            <ChevronDown size={16} className="text-gray-400" />
+
+          </button>
+
+
+
+          {isProjectMenuOpen && (
+
+            <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+
+              <div className="max-h-60 overflow-y-auto">
+
+                {projects.map(p => (
+
+                  <button
+
+                    key={p.id}
+
+                    onClick={() => {
+
+                      setProjectId(p.id);
+
+                      setIsProjectMenuOpen(false);
+
+                    }}
+
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${p.id === currentProjectId ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+
+                  >
+
+                    <span>{p.name}</span>
+
+                    {p.id === currentProjectId && <span className="w-2 h-2 bg-blue-600 rounded-full"></span>}
+
+                  </button>
+
+                ))}
+
+              </div>
+
+              <button
+
+                onClick={handleCreateProject}
+
+                className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-gray-50 font-medium border-t border-gray-100 flex items-center"
+
+              >
+
+                <PlusCircle size={16} className="mr-2" />
+
+                New Project
+
+              </button>
+
+            </div>
+
+          )}
+
         </div>
+
+        
+
         <nav className="space-y-1 flex-1 mt-4 md:mt-0">
           <Link to="/" className={navClass('/')} onClick={closeSidebar}>
             <Home size={20} />

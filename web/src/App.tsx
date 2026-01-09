@@ -10,6 +10,7 @@ import { CampaignList } from './pages/CampaignList';
 import { CampaignDetail } from './pages/CampaignDetail';
 import { Login } from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ProjectProvider } from './context/ProjectContext';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -109,7 +110,9 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <ProjectProvider>
+        <AppRoutes />
+      </ProjectProvider>
     </AuthProvider>
   );
 }
