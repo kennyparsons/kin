@@ -95,25 +95,56 @@ export function CampaignDetail() {
       return;
     }
 
-    // 1. Generate Gmail Link
     const firstName = (recipient.name || '').trim().split(/\s+/)[0];
-    const cleanBody = markdownToPlainText(body);
-    const personalizedBody = cleanBody.replace(/{name}/g, firstName);
     
-    // Use encodeURIComponent to handle special characters, newlines, etc.
-    // Gmail URL format: https://mail.google.com/mail/?view=cm&fs=1&to=...&su=...&body=...
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(personalizedBody)}`;
+    // 1. Generate Content (HTML for Clipboard, URL for Gmail)
+    // We want the user to paste the HTML version.
+    const personalizedMarkdown = body.replace(/{name}/g, firstName);
+    const htmlContent = marked.parse(personalizedMarkdown) as string;
+    const plainTextContent = markdownToPlainText(personalizedMarkdown); // Fallback if they don't paste
+
+    // 2. Copy HTML to Clipboard
+    try {
+      const type = "text/html";
+      const blob = new Blob([htmlContent], { type });
+      const data = [new ClipboardItem({ [type]: blob })];
+      await navigator.clipboard.write(data);
+      
+      // Also write plain text for fallback? ClipboardItem supports multiple types
+      // But let's stick to HTML first. Actually, standard practice is both.
+      // await navigator.clipboard.writeText(plainTextContent); // This might overwrite?
+      // Proper multi-mime:
+      const textBlob = new Blob([plainTextContent], { type: 'text/plain' });
+      const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
+      await navigator.clipboard.write([
+        new ClipboardItem({ 
+          'text/plain': textBlob, 
+          'text/html': htmlBlob 
+        })
+      ]);
+      
+      // alert('Email body copied to clipboard! Paste it (Cmd+V) into Gmail.');
+    } catch (err) {
+      console.error('Failed to copy to clipboard', err);
+      // If copy fails, we fall back to URL body
+    }
+
+    // 3. Open Gmail (Body empty or simple prompt)
+    // We leave body empty to encourage pasting, or we put the plain text as fallback?
+    // If we put plain text, the user has to delete it to paste HTML.
+    // Better to leave it empty if we successfully copied.
     
-    // 2. Open Gmail
+    // Wait, let's put "Paste (Cmd+V)" as body or similar? No, keep it clean.
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient.email)}&su=${encodeURIComponent(subject)}`;
+    
     window.open(gmailUrl, '_blank');
 
-    // 3. Log interaction & Update status in Kin
+    // 4. Log interaction & Update status in Kin
     try {
       await apiFetch(`/api/campaigns/${id}/send/${recipient.person_id}`, {
         method: 'POST'
       });
       
-      // Optimistic update
       setCampaign(prev => {
         if (!prev) return null;
         return {
