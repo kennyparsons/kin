@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Building, Briefcase, Filter, Layers, X, MapPin } from 'lucide-react';
+import { Plus, Search, Building, Briefcase, Filter, Layers, X, MapPin, Heart } from 'lucide-react';
 import { Person } from '../types';
 import { apiFetch } from '../utils/api';
 
@@ -16,6 +16,7 @@ export function PeopleList() {
   const [filterCompany, setFilterCompany] = useState('');
   const [filterFunction, setFilterFunction] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
 
   useEffect(() => {
     apiFetch('/api/people')
@@ -63,10 +64,11 @@ export function PeopleList() {
       const matchesCompany = !filterCompany || p.company === filterCompany;
       const matchesFunction = !filterFunction || p.function === filterFunction;
       const matchesLocation = !filterLocation || p.location === filterLocation;
+      const matchesStatus = !filterStatus || getHealthStatus(p) === filterStatus;
       
-      return matchesSearch && matchesCompany && matchesFunction && matchesLocation;
+      return matchesSearch && matchesCompany && matchesFunction && matchesLocation && matchesStatus;
     });
-  }, [people, search, filterCompany, filterFunction, filterLocation]);
+  }, [people, search, filterCompany, filterFunction, filterLocation, filterStatus]);
 
   // Group Data
   const groupedData = useMemo(() => {
@@ -150,6 +152,26 @@ export function PeopleList() {
           
           <div className="flex flex-wrap gap-2">
             {/* Filters */}
+            <div className="relative">
+              <select 
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className={`pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${filterStatus ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
+              >
+                <option value="">Status</option>
+                <option value="Overdue">Overdue</option>
+                <option value="Due Soon">Due Soon</option>
+                <option value="Healthy">Healthy</option>
+                <option value="Inactive">No Rule</option>
+              </select>
+              <Heart size={14} className={`absolute left-2.5 top-3 ${filterStatus ? 'text-blue-500' : 'text-gray-400'}`} />
+              {filterStatus && (
+                 <button onClick={() => setFilterStatus('')} className="absolute right-2 top-2.5 text-blue-500 hover:text-blue-700">
+                   <X size={14} />
+                 </button>
+              )}
+            </div>
+
             <div className="relative">
               <select 
                 value={filterCompany}
