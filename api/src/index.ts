@@ -39,9 +39,64 @@ app.post('/api/projects', async (c) => {
 })
 
 // --- Auth Routes ---
-// ... (Keep Auth Routes as is, they don't need project yet, except Login returns user)
 
-// ...
+app.post('/auth/login', async (c) => {
+  const { email, password } = await c.req.json()
+
+  const user = await c.env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first()
+  
+  if (!user) {
+    return c.json({ error: 'Invalid credentials' }, 401)
+  }
+
+  try {
+    const isValid = await compare(password, user.password_hash as string)
+    if (!isValid) {
+      return c.json({ error: 'Invalid credentials' }, 401)
+    }
+  } catch (err) {
+    return c.json({ error: 'Auth error' }, 500)
+  }
+
+  const token = await sign({ 
+    id: user.id, 
+    email: user.email, 
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 
+  }, c.env.JWT_SECRET)
+  
+  // Detect if we are on localhost to set secure flag
+  const isLocal = c.req.header('host')?.includes('localhost')
+
+  setCookie(c, 'kin_session', token, {
+    httpOnly: true,
+    secure: !isLocal,
+    sameSite: isLocal ? 'Lax' : 'None',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+  })
+
+  return c.json({ success: true, token, user: { email: user.email } })
+})
+
+app.get('/auth/me', async (c) => {
+  const cookieToken = getCookie(c, 'kin_session')
+  const headerToken = c.req.header('Authorization')?.replace('Bearer ', '')
+  const token = cookieToken || headerToken
+
+  if (!token) return c.json({ authenticated: false }, 401)
+  
+  try {
+    const payload = await verify(token, c.env.JWT_SECRET)
+    return c.json({ authenticated: true, user: payload })
+  } catch (e) {
+    return c.json({ authenticated: false }, 401)
+  }
+})
+
+app.post('/auth/logout', (c) => {
+  deleteCookie(c, 'kin_session')
+  return c.json({ success: true })
+})
 
 // --- Middleware ---
 
