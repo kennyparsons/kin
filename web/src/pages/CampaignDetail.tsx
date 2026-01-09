@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, UserPlus, Mail, CheckCircle, X, ListPlus, Archive, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, UserPlus, Mail, CheckCircle, X, ListPlus, RefreshCw, Trash2 } from 'lucide-react';
 import { Campaign, Person, CampaignRecipient } from '../types';
 import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
