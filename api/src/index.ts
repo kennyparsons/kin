@@ -278,11 +278,13 @@ app.patch('/api/reminders/:id/status', async (c) => {
 
 app.get('/api/campaigns', async (c) => {
   const status = c.req.query('status') || 'open'
-  const query = status === 'all' 
-    ? 'SELECT * FROM campaigns ORDER BY created_at DESC'
-    : 'SELECT * FROM campaigns WHERE status = ? ORDER BY created_at DESC'
   
-  const { results } = await c.env.DB.prepare(query).bind(status === 'all' ? undefined : status).all()
+  if (status === 'all') {
+    const { results } = await c.env.DB.prepare('SELECT * FROM campaigns ORDER BY created_at DESC').all()
+    return c.json(results)
+  }
+  
+  const { results } = await c.env.DB.prepare('SELECT * FROM campaigns WHERE status = ? ORDER BY created_at DESC').bind(status).all()
   return c.json(results)
 })
 
