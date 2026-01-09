@@ -318,16 +318,16 @@ app.put('/api/campaigns/:id', async (c) => {
   return c.json({ success: true })
 })
 
-app.delete('/api/campaigns/:id', async (c) => {
-  const id = c.req.param('id')
-  await c.env.DB.prepare('DELETE FROM campaigns WHERE id = ?').bind(id).run()
-  return c.json({ success: true })
-})
-
 app.patch('/api/campaigns/:id/status', async (c) => {
   const id = c.req.param('id')
   const { status } = await c.req.json()
   await c.env.DB.prepare('UPDATE campaigns SET status = ? WHERE id = ?').bind(status, id).run()
+  return c.json({ success: true })
+})
+
+app.delete('/api/campaigns/:id', async (c) => {
+  const id = c.req.param('id')
+  await c.env.DB.prepare('DELETE FROM campaigns WHERE id = ?').bind(id).run()
   return c.json({ success: true })
 })
 
