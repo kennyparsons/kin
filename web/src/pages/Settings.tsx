@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useProject } from '../context/ProjectContext';
 import { apiFetch } from '../utils/api';
-import { Edit2, Trash2, Check, X, Plus } from 'lucide-react';
+import { Edit2, Trash2, Check, X } from 'lucide-react';
 
 export function Settings() {
-  const { projects, currentProjectId, refreshProjects, setProjectId } = useProject();
+  const { projects, currentProjectId, refreshProjects } = useProject();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
 
