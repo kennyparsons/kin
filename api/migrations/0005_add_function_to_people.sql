@@ -1,0 +1,1 @@
+ALTER TABLE people ADD COLUMN function TEXT;

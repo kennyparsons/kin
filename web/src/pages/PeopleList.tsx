@@ -138,8 +138,8 @@ export function PeopleList() {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {/* Toolbar */}
-        <div className="p-4 border-b border-gray-200 flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
+        <div className="p-4 border-b border-gray-200 flex flex-col gap-4">
+          <div className="relative w-full">
             <Search size={18} className="absolute left-3 top-2.5 text-gray-400" />
             <input 
               type="text" 
@@ -150,13 +150,13 @@ export function PeopleList() {
             />
           </div>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {/* Filters */}
             <div className="relative">
               <select 
                 value={filterStatus}
                 onChange={e => setFilterStatus(e.target.value)}
-                className={`pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${filterStatus ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
+                className={`w-full pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm truncate ${filterStatus ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
               >
                 <option value="">Status</option>
                 <option value="Overdue">Overdue</option>
@@ -176,7 +176,7 @@ export function PeopleList() {
               <select 
                 value={filterCompany}
                 onChange={e => setFilterCompany(e.target.value)}
-                className={`pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${filterCompany ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
+                className={`w-full pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm truncate ${filterCompany ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
               >
                 <option value="">Company</option>
                 {uniqueCompanies.sort().map(c => <option key={c} value={c}>{c}</option>)}
@@ -193,7 +193,7 @@ export function PeopleList() {
               <select 
                 value={filterFunction}
                 onChange={e => setFilterFunction(e.target.value)}
-                className={`pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${filterFunction ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
+                className={`w-full pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm truncate ${filterFunction ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
               >
                 <option value="">Function</option>
                 {uniqueFunctions.sort().map(f => <option key={f} value={f}>{f}</option>)}
@@ -210,7 +210,7 @@ export function PeopleList() {
               <select 
                 value={filterLocation}
                 onChange={e => setFilterLocation(e.target.value)}
-                className={`pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${filterLocation ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
+                className={`w-full pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm truncate ${filterLocation ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
               >
                 <option value="">Location</option>
                 {uniqueLocations.sort().map(l => <option key={l} value={l}>{l}</option>)}
@@ -224,11 +224,11 @@ export function PeopleList() {
             </div>
 
             {/* Group By */}
-            <div className="relative border-l border-gray-200 pl-2 ml-2">
+            <div className="relative md:col-span-1 col-span-2">
               <select 
                 value={groupBy}
                 onChange={e => setGroupBy(e.target.value as GroupBy)}
-                className={`pl-8 pr-4 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm ${groupBy !== 'none' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'border-gray-300'}`}
+                className={`w-full pl-8 pr-4 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm truncate ${groupBy !== 'none' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'border-gray-300'}`}
               >
                 <option value="none">No Grouping</option>
                 <option value="company">Group by Company</option>
