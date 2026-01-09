@@ -61,9 +61,16 @@ export function PeopleList() {
     return people.filter(p => {
       const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
                             p.company?.toLowerCase().includes(search.toLowerCase());
-      const matchesCompany = !filterCompany || p.company === filterCompany;
-      const matchesFunction = !filterFunction || p.function === filterFunction;
-      const matchesLocation = !filterLocation || p.location === filterLocation;
+      
+      const matchesCompany = !filterCompany || 
+                             (filterCompany === '__empty__' ? !p.company : p.company === filterCompany);
+      
+      const matchesFunction = !filterFunction || 
+                              (filterFunction === '__empty__' ? !p.function : p.function === filterFunction);
+      
+      const matchesLocation = !filterLocation || 
+                              (filterLocation === '__empty__' ? !p.location : p.location === filterLocation);
+      
       const matchesStatus = !filterStatus || getHealthStatus(p) === filterStatus;
       
       return matchesSearch && matchesCompany && matchesFunction && matchesLocation && matchesStatus;
@@ -179,6 +186,7 @@ export function PeopleList() {
                 className={`w-full pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm truncate ${filterCompany ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
               >
                 <option value="">Company</option>
+                <option value="__empty__">(Empty)</option>
                 {uniqueCompanies.sort().map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <Filter size={14} className={`absolute left-2.5 top-3 ${filterCompany ? 'text-blue-500' : 'text-gray-400'}`} />
@@ -196,6 +204,7 @@ export function PeopleList() {
                 className={`w-full pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm truncate ${filterFunction ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
               >
                 <option value="">Function</option>
+                <option value="__empty__">(Empty)</option>
                 {uniqueFunctions.sort().map(f => <option key={f} value={f}>{f}</option>)}
               </select>
               <Briefcase size={14} className={`absolute left-2.5 top-3 ${filterFunction ? 'text-blue-500' : 'text-gray-400'}`} />
@@ -213,6 +222,7 @@ export function PeopleList() {
                 className={`w-full pl-8 pr-8 py-2 rounded-lg border appearance-none outline-none cursor-pointer text-sm truncate ${filterLocation ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-300'}`}
               >
                 <option value="">Location</option>
+                <option value="__empty__">(Empty)</option>
                 {uniqueLocations.sort().map(l => <option key={l} value={l}>{l}</option>)}
               </select>
               <MapPin size={14} className={`absolute left-2.5 top-3 ${filterLocation ? 'text-blue-500' : 'text-gray-400'}`} />

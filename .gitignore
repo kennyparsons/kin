@@ -4,4 +4,5 @@ dist
 .dev.vars
 .DS_Store
 *.log
-*.sqlSCR*.png
+*.sql
+SCR*.png
