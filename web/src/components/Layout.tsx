@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Users, Home, LogOut, Menu, X, Bell, MessageSquarePlus, Send, ChevronDown, PlusCircle } from 'lucide-react';
+import { Users, Home, LogOut, Menu, X, Bell, MessageSquarePlus, Send, ChevronDown, PlusCircle, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProject } from '../context/ProjectContext';
 
@@ -224,6 +224,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Link to="/people" className={navClass('/people')} onClick={closeSidebar}>
             <Users size={20} />
             <span>People</span>
+          </Link>
+          <Link to="/settings" className={navClass('/settings')} onClick={closeSidebar}>
+            <Settings size={20} />
+            <span>Settings</span>
           </Link>
         </nav>
 

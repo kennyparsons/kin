@@ -38,6 +38,19 @@ app.post('/api/projects', async (c) => {
   return c.json({ success: true, id: result.meta.last_row_id }, 201)
 })
 
+app.put('/api/projects/:id', async (c) => {
+  const id = c.req.param('id')
+  const { name } = await c.req.json()
+  await c.env.DB.prepare('UPDATE projects SET name = ? WHERE id = ?').bind(name, id).run()
+  return c.json({ success: true })
+})
+
+app.delete('/api/projects/:id', async (c) => {
+  const id = c.req.param('id')
+  await c.env.DB.prepare('DELETE FROM projects WHERE id = ?').bind(id).run()
+  return c.json({ success: true })
+})
+
 // --- Auth Routes ---
 
 app.post('/auth/login', async (c) => {

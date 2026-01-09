@@ -8,6 +8,7 @@ import { Reminders } from './pages/Reminders';
 import { InteractionLog } from './pages/InteractionLog';
 import { CampaignList } from './pages/CampaignList';
 import { CampaignDetail } from './pages/CampaignDetail';
+import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProjectProvider } from './context/ProjectContext';
@@ -68,6 +69,14 @@ function AppRoutes() {
         <RequireAuth>
           <Layout>
             <CampaignDetail />
+          </Layout>
+        </RequireAuth>
+      } />
+
+      <Route path="/settings" element={
+        <RequireAuth>
+          <Layout>
+            <Settings />
           </Layout>
         </RequireAuth>
       } />
