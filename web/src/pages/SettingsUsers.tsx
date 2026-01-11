@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
 import { Plus, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
@@ -13,8 +13,6 @@ interface User {
 
 export function SettingsUsers() {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
@@ -27,8 +25,6 @@ export function SettingsUsers() {
       setUsers(data);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit2, Trash2, Shield, Calendar, Mail } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, Calendar, Mail } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
 
