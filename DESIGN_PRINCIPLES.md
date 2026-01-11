@@ -1,104 +1,85 @@
-# Design Principles & Architecture Guide
+# Visual Design Principles
 
-This document outlines the core architectural decisions, design patterns, and standards for the application. It serves as the "Constitution" for development, ensuring consistency, scalability, and security as the project evolves.
-
----
-
-## 1. Technology Stack
-
-We leverage a modern, edge-first stack designed for performance, low operational overhead, and developer experience.
-
-*   **Runtime & API:** [Cloudflare Workers](https://workers.cloudflare.com/) (Serverless, V8-based).
-*   **Framework:** [Hono](https://hono.dev/) (Lightweight, web-standards compliant, ultrafast router).
-*   **Database:** [Cloudflare D1](https://developers.cloudflare.com/d1/) (SQLite at the Edge).
-*   **Frontend:** [React](https://react.dev/) + [Vite](https://vitejs.dev/) (Build tool).
-*   **Styling:** [Tailwind CSS](https://tailwindcss.com/) (Utility-first).
-*   **Deployment:** Cloudflare Pages (Frontend) + Workers (Backend).
+This document defines the visual identity and user interface standards for the application. It ensures a cohesive, professional, and accessible aesthetic across all modules.
 
 ---
 
-## 2. Data Architecture
+## 1. Core Aesthetic: "Professional Simplicity"
 
-### A. Identification (UUIDs)
-*   **Principle:** **Use UUIDs (Universally Unique Identifiers) for all Primary Keys.**
-*   **Why:**
-    *   **Security:** Prevents ID enumeration (e.g., guessing `id=101` after seeing `id=100`).
-    *   **Scale:** Allows distributed ID generation without database coordination.
-    *   **Merging:** Simplifies merging datasets or syncing between environments.
-*   **Implementation:** Use standard UUID v4 or v7 (time-sortable) stored as TEXT in SQLite.
+The design language is rooted in **Material Design principles** and **Tailwind CSS defaults**. It aims for a "Clean SaaS" look: high contrast, generous whitespace, and subtle depth.
 
-### B. Multi-Tenancy (Projects)
-*   **Principle:** **"Project" is the hard isolation boundary.**
-*   **Concept:** The application allows a single user identity to manage multiple distinct contexts (e.g., "Work", "Personal", "Side Business") via **Projects**.
-*   **Rule:** Every domain entity (e.g., Contacts, Tasks, Campaigns) **MUST** belong to a specific Project (`project_id`).
-*   **Isolation:** Data from Project A must *never* leak into Project B, neither in the UI nor via the API.
+### A. Minimalist Foundation
+- **Backgrounds:** Use light grays (`bg-gray-50`) for page backgrounds to provide subtle contrast against white content containers.
+- **Surface Elevation:** Content containers (cards, lists) should be white (`bg-white`) with rounded corners (`rounded-xl`) and a very soft shadow (`shadow-sm`) or a thin border (`border-gray-200`).
 
 ---
 
-## 3. Security & Access Control
+## 2. Color Palette
 
-### A. Zero Trust API
-*   **Principle:** **The API is the boundary. The Frontend is untrusted.**
-*   **Enforcement:**
-    *   Never rely on the frontend to filter data.
-    *   Every API request (GET, POST, PUT, DELETE) must verify:
-        1.  **Authentication:** Who is the user?
-        2.  **Context:** Which Project are they accessing? (`X-Project-ID` header).
-        3.  **Authorization:** Does this User have permission to access this Project?
-    *   **Query Scope:** All SQL queries must explicitly include `WHERE project_id = ?` to prevent crafted requests from accessing unauthorized data.
+We use a restricted color palette to convey status, primary actions, and hierarchy without overwhelming the user.
 
-### B. RBAC (Role-Based Access Control)
-*   **Principle:** **Permissions are granular; Roles are grouping mechanisms.**
-*   **Definitions:**
-    *   **Permission:** A granular ability (e.g., `project:write`, `user:invite`, `billing:read`).
-    *   **Role:** A collection of permissions (e.g., `Owner` = `*`, `Editor` = `project:write`, `Viewer` = `project:read`).
-*   **Authorization Engine:** API middleware should evaluate permissions, not just roles.
-    *   *Bad:* `if (user.role === 'Admin')`
-    *   *Good:* `if (can(user, 'project:delete'))`
+- **Primary (Blue):** `#2563EB` (Tailwind `blue-600`). Used for primary buttons, active navigation states, and branding.
+- **Neutral (Gray):** A scale from `gray-50` to `gray-900`. 
+    - `gray-900`: Headings and primary text.
+    - `gray-600`: Secondary text/labels.
+    - `gray-400`: Placeholder text and disabled icons.
+- **Status Colors:**
+    - **Success (Green):** `emerald-600` / `green-600`. Toggles, completed statuses.
+    - **Warning (Yellow):** `amber-500` / `yellow-500`. "Due Soon" indicators.
+    - **Danger (Red):** `red-600`. Delete buttons, overdue statuses, errors.
+    - **Info (Indigo/Purple):** `indigo-600`. Special groupings or metadata.
 
 ---
 
-## 4. UI/UX Patterns ("The Standard")
+## 3. Typography
 
-To maintain a consistent and professional user experience, we adhere to a strict **List-Detail-Edit** separation pattern. Avoid "Inline Editing" for complex entities.
-
-### A. Page Structure
-1.  **List View (`/resource`)**
-    *   **Purpose:** Scan, search, and filter.
-    *   **Components:** Search bar (top), Filters (grid/row), Data Grid/List.
-    *   **Actions:** "Create New" (Primary Button), Bulk Actions.
-    *   **Interaction:** Clicking a row navigates to the **Detail View**.
-
-2.  **Detail View (`/resource/:id`)**
-    *   **Purpose:** Read and consume information.
-    *   **State:** Read-only by default.
-    *   **Layout:** High-level summary at top, detailed tabs or sections below.
-    *   **Actions:** "Edit" (Navigates to Form), "Delete" (Critical action).
-
-3.  **Edit/Create Form (`/resource/:id/edit` or `/resource/new`)**
-    *   **Purpose:** Focused data entry.
-    *   **State:** Full page form (or large modal for simple entities).
-    *   **Validation:** Client-side validation before submission.
-    *   **Navigation:** "Cancel" returns to previous view. "Save" commits and redirects to Detail View.
-
-### B. Navigation Hierarchy
-*   **Primary Sidebar:** High-level app modules (Dashboard, Resources, Settings).
-*   **Context Switcher:** Project/Workspace selector resides at the top of the Sidebar.
-*   **Sub-Navigation (Settings):** For complex modules like Settings, use an **Inner Sidebar** pattern (`/settings/users`, `/settings/billing`) rather than a dropdown or tabs, to maintain a clean URL structure and deep-linking capability.
+- **Font Family:** Standard sans-serif stack (Inter, system fonts).
+- **Headings:**
+    - Page Titles: `text-3xl font-bold text-gray-900`.
+    - Section Headers: `text-lg font-bold text-gray-900`.
+    - Subheaders: `text-sm font-bold text-gray-400 uppercase tracking-wider`.
+- **Body Text:** `text-sm` or `text-base` with `text-gray-600` or `text-gray-800`.
+- **Emphasis:** Use font weight (`font-medium` or `font-semibold`) rather than color where possible to maintain clean aesthetics.
 
 ---
 
-## 5. Development Guidelines
+## 4. Components & Interaction
 
-### A. Extensibility
-*   **Schema First:** When adding a feature, start with the Database Schema (`migrations`).
-*   **API Second:** Build robust endpoints (`api/src`) that enforce the Security Principles above.
-*   **UI Last:** Build the Frontend (`web/src`) to consume the API.
+### A. Buttons
+- **Primary:** `bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700`.
+- **Secondary/Outline:** `border border-gray-300 text-gray-700 hover:bg-gray-50`.
+- **Ghost/Action:** `text-gray-400 hover:text-blue-600 p-2 transition-colors`.
+- **Critical Action:** `text-red-600 hover:bg-red-50`.
 
-### B. "No Orphan" Rule
-*   **Cascading Deletes:** Use Database Foreign Keys (`ON DELETE CASCADE`) to ensure data hygiene. If a Project is deleted, all its Contacts, Tasks, and Notes must vanish instantly.
+### B. Input Fields
+- **Standard:** `rounded-lg border-gray-300 border p-2 focus:ring-2 focus:ring-blue-500 outline-none`.
+- **Selects:** Always use a custom styled appearance or standard rounded border to match inputs. Ensure icons (like `ChevronDown`) are used to indicate interactivity.
 
-### C. State Management
-*   **Context:** Use React Context for global, slowly-changing state (Auth, Current Project).
-*   **Local State:** Use `useState`/`useEffect` for page-specific data.
-*   **Optimistic Updates:** For simple toggles (e.g., "Mark Complete"), update the UI immediately while the API request processes in the background.
+### C. Lists & Tables
+- **Standard:** "Empty" state padding should be consistent (`p-8`).
+- **Rows:** `hover:bg-gray-50 transition-colors` to indicate clickability.
+- **Dividers:** Use `divide-y divide-gray-100` for subtle separation.
+
+---
+
+## 5. Layout & Spacing
+
+### A. The "8px Grid"
+All margins and paddings should ideally be multiples of 4 (Tailwind units).
+- `p-4` (16px) for small cards.
+- `p-6` (24px) for main content areas.
+- `mb-8` (32px) for spacing between major sections (e.g., Header to List).
+
+### B. Responsive Containers
+- **Main Content:** Max width of `max-w-5xl` or `max-w-4xl` depending on content density, centered with `mx-auto`.
+- **Sidebars:**
+    - Fixed width (`w-64`) on desktop.
+    - Mobile: Full height overlay with smooth transition (`translate-x`).
+
+---
+
+## 6. Icons & Imagery
+
+- **Iconography:** Exclusively use [Lucide React](https://lucide.dev/).
+- **Sizing:** Standardize on `size={20}` for nav/primary actions, `size={16}` or `size={14}` for metadata/inline icons.
+- **Avatars:** Use rounded-full backgrounds with initials for people and projects to provide a personal touch without requiring images.
