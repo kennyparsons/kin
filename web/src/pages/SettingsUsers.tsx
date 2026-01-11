@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../utils/api';
-import { Plus, Edit2, Trash2, Check, X, Shield } from 'lucide-react';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface User {
@@ -12,7 +12,6 @@ interface User {
 
 export function SettingsUsers() {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   
   // Editing State
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -33,8 +32,6 @@ export function SettingsUsers() {
       setUsers(data);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 

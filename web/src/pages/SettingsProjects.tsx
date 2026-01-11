@@ -3,7 +3,7 @@ import { useProject } from '../context/ProjectContext';
 import { apiFetch } from '../utils/api';
 import { Edit2, Trash2, Check, X } from 'lucide-react';
 
-export function Settings() {
+export function SettingsProjects() {
   const { projects, currentProjectId, refreshProjects } = useProject();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
