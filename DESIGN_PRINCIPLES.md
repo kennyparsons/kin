@@ -16,18 +16,31 @@ The design language is rooted in **Material Design principles** and **Tailwind C
 
 ## 2. Color Palette
 
-We use a restricted color palette to convey status, primary actions, and hierarchy without overwhelming the user.
+We use a restricted color palette to convey status, primary actions, and hierarchy. All colors are derived from the Tailwind CSS v3 default palette.
 
-- **Primary (Blue):** `#2563EB` (Tailwind `blue-600`). Used for primary buttons, active navigation states, and branding.
-- **Neutral (Gray):** A scale from `gray-50` to `gray-900`. 
-    - `gray-900`: Headings and primary text.
-    - `gray-600`: Secondary text/labels.
-    - `gray-400`: Placeholder text and disabled icons.
-- **Status Colors:**
-    - **Success (Green):** `emerald-600` / `green-600`. Toggles, completed statuses.
-    - **Warning (Yellow):** `amber-500` / `yellow-500`. "Due Soon" indicators.
-    - **Danger (Red):** `red-600`. Delete buttons, overdue statuses, errors.
-    - **Info (Indigo/Purple):** `indigo-600`. Special groupings or metadata.
+### A. Primary Branding (Blue)
+- **Primary:** `blue-600` (#2563EB) - Used for primary buttons, active sidebar icons, and text links.
+- **Surface:** `blue-50` (#EFF6FF) - Used for the background of active navigation items and "Success" notification banners.
+- **Border:** `blue-200` (#BFDBFE) - Used for borders on focused inputs or active cards.
+
+### B. Neutral Scale (Grayscale)
+- **Page Background:** `gray-50` (#F9FAFB) - Use for the main app background to lift white cards.
+- **Card Background:** `white` (#FFFFFF) - All content containers.
+- **Primary Text:** `gray-900` (#111827) - Used for headings, names, and high-emphasis labels.
+- **Secondary Text:** `gray-600` (#4B5563) - Used for body text, metadata descriptions, and secondary labels.
+- **Muted Text:** `gray-400` (#9CA3AF) - Used for icons, placeholders, and disabled states.
+- **Surface Border:** `gray-200` (#E5E7EB) - Standard divider and container border color.
+- **Subtle Surface:** `gray-100` (#F3F4F6) - Hover states for rows and buttons.
+
+### C. Semantic / Status Colors
+- **Success:** `emerald-600` (#059669)
+    - *Usage:* Completion checkmarks, "Healthy" status dots, success toasts.
+- **Warning:** `amber-500` (#F59E0B)
+    - *Usage:* "Due Soon" date warnings, low-priority alerts.
+- **Danger:** `red-600` (#DC2626)
+    - *Usage:* Delete buttons, "Overdue" status dots, error messages.
+- **Isolation/Context:** `indigo-600` (#4F46E5)
+    - *Usage:* Multi-project indicators or "Function" tags to distinguish from primary actions.
 
 ---
 

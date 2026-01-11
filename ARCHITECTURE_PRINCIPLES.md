@@ -13,6 +13,7 @@ We leverage a modern, edge-first stack designed for performance, low operational
 *   **Database:** [Cloudflare D1](https://developers.cloudflare.com/d1/) (SQLite at the Edge).
 *   **Frontend:** [React](https://react.dev/) + [Vite](https://vitejs.dev/) (Build tool).
 *   **Styling:** [Tailwind CSS](https://tailwindcss.com/) (Utility-first).
+*   **ORM:** [Drizzle ORM](https://orm.drizzle.team/) (TypeScript-first, Edge-compatible).
 *   **Deployment:** Cloudflare Pages (Frontend) + Workers (Backend).
 
 ---
@@ -27,7 +28,14 @@ We leverage a modern, edge-first stack designed for performance, low operational
     *   **Merging:** Simplifies merging datasets or syncing between environments.
 *   **Implementation:** Use standard UUID v4 or v7 (time-sortable) stored as TEXT in SQLite.
 
-### B. Multi-Tenancy (Projects)
+### B. Type-Safe Database (Drizzle ORM)
+*   **Principle:** **The database schema is the "Single Source of Truth" for types.**
+*   **Strategy:** Use Drizzle ORM to define schemas in TypeScript. This ensures:
+    1.  **Type Safety:** Frontend and Backend share the same data shapes.
+    2.  **Migration Safety:** Drizzle Kit generates reliable SQL migrations.
+    3.  **Performance:** Zero-overhead queries optimized for serverless cold-starts.
+
+### C. Multi-Tenancy (Projects)
 *   **Principle:** **"Project" is the hard isolation boundary.**
 *   **Concept:** The application allows a single user identity to manage multiple distinct contexts (e.g., "Work", "Personal", "Side Business") via **Projects**.
 *   **Rule:** Every domain entity (e.g., Contacts, Tasks, Campaigns) **MUST** belong to a specific Project (`project_id`).
