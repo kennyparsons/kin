@@ -51,6 +51,49 @@ app.delete('/api/projects/:id', async (c) => {
   return c.json({ success: true })
 })
 
+// --- User Management Routes ---
+
+app.get('/api/users', async (c) => {
+  // Only return safe fields
+  const { results } = await c.env.DB.prepare('SELECT id, email, name, created_at FROM users ORDER BY created_at ASC').all()
+  return c.json(results)
+})
+
+app.post('/api/users', async (c) => {
+  const { email, password, name } = await c.req.json()
+  const password_hash = await hash(password, 10)
+  
+  try {
+    const result = await c.env.DB.prepare(
+      'INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)'
+    ).bind(email, password_hash, name || null).run()
+    return c.json({ success: true, id: result.meta.last_row_id }, 201)
+  } catch (e) {
+    return c.json({ error: 'Failed to create user (Email likely exists)' }, 400)
+  }
+})
+
+app.put('/api/users/:id', async (c) => {
+  const id = c.req.param('id')
+  const { email, password, name } = await c.req.json()
+  
+  if (password) {
+    const password_hash = await hash(password, 10)
+    await c.env.DB.prepare('UPDATE users SET email = ?, name = ?, password_hash = ? WHERE id = ?').bind(email, name, password_hash, id).run()
+  } else {
+    await c.env.DB.prepare('UPDATE users SET email = ?, name = ? WHERE id = ?').bind(email, name, id).run()
+  }
+  
+  return c.json({ success: true })
+})
+
+app.delete('/api/users/:id', async (c) => {
+  const id = c.req.param('id')
+  // Optional: Prevent deleting self? (Frontend handles it, API should too ideally but skipping for MVP)
+  await c.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(id).run()
+  return c.json({ success: true })
+})
+
 // --- Auth Routes ---
 
 app.post('/auth/login', async (c) => {
