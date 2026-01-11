@@ -10,6 +10,8 @@ import { CampaignList } from './pages/CampaignList';
 import { CampaignDetail } from './pages/CampaignDetail';
 import { SettingsProjects } from './pages/SettingsProjects';
 import { SettingsUsers } from './pages/SettingsUsers';
+import { SettingsUserDetail } from './pages/SettingsUserDetail';
+import { SettingsUserForm } from './pages/SettingsUserForm';
 import { SettingsLayout } from './components/SettingsLayout';
 import { Login } from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -92,6 +94,36 @@ function AppRoutes() {
           <Layout>
             <SettingsLayout>
               <SettingsUsers />
+            </SettingsLayout>
+          </Layout>
+        </RequireAuth>
+      } />
+
+      <Route path="/settings/users/new" element={
+        <RequireAuth>
+          <Layout>
+            <SettingsLayout>
+              <SettingsUserForm />
+            </SettingsLayout>
+          </Layout>
+        </RequireAuth>
+      } />
+
+      <Route path="/settings/users/:id" element={
+        <RequireAuth>
+          <Layout>
+            <SettingsLayout>
+              <SettingsUserDetail />
+            </SettingsLayout>
+          </Layout>
+        </RequireAuth>
+      } />
+
+      <Route path="/settings/users/:id/edit" element={
+        <RequireAuth>
+          <Layout>
+            <SettingsLayout>
+              <SettingsUserForm />
             </SettingsLayout>
           </Layout>
         </RequireAuth>
