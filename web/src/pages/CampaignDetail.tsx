@@ -41,6 +41,9 @@ export function CampaignDetail() {
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   const [pendingEmailAction, setPendingEmailAction] = useState<(() => void) | null>(null);
 
+  // Success Modal
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   useEffect(() => {
     if (id) fetchCampaign();
   }, [id]);
@@ -83,7 +86,7 @@ export function CampaignDetail() {
       setSavedTitle(title);
       setSavedSubject(subject);
       setSavedBody(body);
-      alert('Campaign saved');
+      setShowSuccessModal(true);
     } catch (err) {
       alert('Failed to save campaign');
     } finally {
@@ -493,6 +496,16 @@ export function CampaignDetail() {
         confirmText="Save & Continue"
         cancelText="Continue Without Saving"
         variant="warning"
+      />
+
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        onConfirm={() => setShowSuccessModal(false)}
+        title="Campaign Saved"
+        message="Your campaign template has been saved successfully."
+        confirmText="OK"
+        variant="success"
       />
     </div>
   );

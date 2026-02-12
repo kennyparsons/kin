@@ -4,11 +4,13 @@ import { Plus, Send, Calendar, ChevronRight, Loader } from 'lucide-react';
 import { Campaign } from '../types';
 import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
+import { TextInputModal } from '../components/TextInputModal';
 
 export function CampaignList() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,10 +45,7 @@ export function CampaignList() {
     }
   };
 
-  const createCampaign = async () => {
-    const title = prompt('Enter campaign title:');
-    if (!title) return;
-
+  const createCampaign = async (title: string) => {
     try {
       const res = await apiFetch('/api/campaigns', {
         method: 'POST',
@@ -65,16 +64,16 @@ export function CampaignList() {
         <h1 className="text-3xl font-bold text-gray-900">Outreach Campaigns</h1>
         <div className="flex items-center space-x-4">
           <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-600 select-none">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={showCompleted}
               onChange={e => setShowCompleted(e.target.checked)}
               className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 border-gray-300"
             />
             <span>Show All (History)</span>
           </label>
-          <button 
-            onClick={createCampaign}
+          <button
+            onClick={() => setShowCreateModal(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700 transition-colors shadow-sm"
           >
             <Plus size={20} className="mr-2" />
@@ -82,6 +81,16 @@ export function CampaignList() {
           </button>
         </div>
       </div>
+
+      <TextInputModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={createCampaign}
+        title="Create New Campaign"
+        label="Campaign Title"
+        placeholder="e.g. Q1 Outreach"
+        submitText="Create"
+      />
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
