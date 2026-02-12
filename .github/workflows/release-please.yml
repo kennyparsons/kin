@@ -89,13 +89,15 @@ jobs:
 
       - name: Create deployment summary
         run: |
-          echo "## 🚀 Deployment Successful" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Version:** ${{ needs.release-please.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Tag:** ${{ needs.release-please.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Deployed Services" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Web Frontend (Cloudflare Pages)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ API Backend (Cloudflare Workers)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Worker Secrets Configured" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Database Migrations Applied" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 🚀 Deployment Successful"
+            echo ""
+            echo "**Version:** ${{ needs.release-please.outputs.version }}"
+            echo "**Tag:** ${{ needs.release-please.outputs.tag_name }}"
+            echo ""
+            echo "### Deployed Services"
+            echo "- ✅ Web Frontend (Cloudflare Pages)"
+            echo "- ✅ API Backend (Cloudflare Workers)"
+            echo "- ✅ Worker Secrets Configured"
+            echo "- ✅ Database Migrations Applied"
+          } >> "$GITHUB_STEP_SUMMARY"
