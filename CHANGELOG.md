@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/kennyparsons/kin/compare/kin-v1.1.0...kin-v1.1.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* modal windows campaigns ([#3](https://github.com/kennyparsons/kin/issues/3)) ([465be11](https://github.com/kennyparsons/kin/commit/465be119707412ad8a1fc45217b2527abaed47c7))
+
 ## [1.1.0](https://github.com/kennyparsons/kin/compare/kin-v1.0.0...kin-v1.1.0) (2026-02-12)
 
 
