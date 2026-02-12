@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, UserPlus, Mail, CheckCircle, X, ListPlus, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, UserPlus, Mail, CheckCircle, X, ListPlus, RefreshCw, Trash2, Users } from 'lucide-react';
 import { Campaign, Person, CampaignRecipient } from '../types';
 import { apiFetch } from '../utils/api';
 import { format } from 'date-fns';
 import { PersonSelectorModal } from '../components/PersonSelectorModal';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 import { marked } from 'marked';
+import { useAuth } from '../context/AuthContext';
 
 export function CampaignDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSubmitting] = useState(false);
@@ -20,8 +23,23 @@ export function CampaignDetail() {
   const [body, setBody] = useState('');
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
 
+  // Saved state for change detection
+  const [savedTitle, setSavedTitle] = useState('');
+  const [savedSubject, setSavedSubject] = useState('');
+  const [savedBody, setSavedBody] = useState('');
+
   // Selector Modal
   const [showSelector, setShowSelector] = useState(false);
+
+  // Mass Email Confirmation Modal
+  const [showMassEmailConfirm, setShowMassEmailConfirm] = useState(false);
+
+  // Error Modal for {name} validation
+  const [showNameErrorModal, setShowNameErrorModal] = useState(false);
+
+  // Unsaved Changes Modal
+  const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
+  const [pendingEmailAction, setPendingEmailAction] = useState<(() => void) | null>(null);
 
   useEffect(() => {
     if (id) fetchCampaign();
@@ -35,11 +53,19 @@ export function CampaignDetail() {
       setTitle(data.title);
       setSubject(data.subject_template || '');
       setBody(data.body_template || '');
+      // Update saved state
+      setSavedTitle(data.title);
+      setSavedSubject(data.subject_template || '');
+      setSavedBody(data.body_template || '');
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const hasUnsavedChanges = () => {
+    return title !== savedTitle || subject !== savedSubject || body !== savedBody;
   };
 
   const handleSave = async () => {
@@ -53,6 +79,10 @@ export function CampaignDetail() {
           body_template: body
         })
       });
+      // Update saved state after successful save
+      setSavedTitle(title);
+      setSavedSubject(subject);
+      setSavedBody(body);
       alert('Campaign saved');
     } catch (err) {
       alert('Failed to save campaign');
@@ -110,6 +140,30 @@ export function CampaignDetail() {
     }
   };
 
+  const checkUnsavedChangesBeforeEmail = (emailAction: () => void) => {
+    if (hasUnsavedChanges()) {
+      setPendingEmailAction(() => emailAction);
+      setShowUnsavedChangesModal(true);
+    } else {
+      emailAction();
+    }
+  };
+
+  const handleSaveAndContinue = async () => {
+    await handleSave();
+    if (pendingEmailAction) {
+      pendingEmailAction();
+      setPendingEmailAction(null);
+    }
+  };
+
+  const handleContinueWithoutSaving = () => {
+    if (pendingEmailAction) {
+      pendingEmailAction();
+      setPendingEmailAction(null);
+    }
+  };
+
   const draftEmail = async (recipient: CampaignRecipient) => {
     if (!recipient.email) {
       alert('No email for this contact');
@@ -122,7 +176,7 @@ export function CampaignDetail() {
     // 1. Generate Gmail Link with Raw Markdown in the body
     // This allows browser plugins to convert MD to Rich Text automatically.
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(personalizedMarkdown)}`;
-    
+
     window.open(gmailUrl, '_blank');
 
     // 2. Log interaction & Update status in Kin
@@ -130,18 +184,84 @@ export function CampaignDetail() {
       await apiFetch(`/api/campaigns/${id}/send/${recipient.person_id}`, {
         method: 'POST'
       });
-      
+
       setCampaign(prev => {
         if (!prev) return null;
         return {
           ...prev,
-          recipients: prev.recipients?.map(r => 
+          recipients: prev.recipients?.map(r =>
             r.person_id === recipient.person_id ? { ...r, status: 'sent', sent_at: Math.floor(Date.now() / 1000) } : r
           )
         };
       });
     } catch (err) {
       console.error('Failed to log interaction', err);
+    }
+  };
+
+  const handleMassEmailClick = () => {
+    // Pre-check: validate no {name} variables exist
+    if (body.includes('{name}')) {
+      setShowNameErrorModal(true);
+      return;
+    }
+
+    // Check if there are recipients
+    const recipients = campaign?.recipients || [];
+    if (recipients.length === 0) {
+      alert('No recipients to email');
+      return;
+    }
+
+    // Show confirmation modal
+    setShowMassEmailConfirm(true);
+  };
+
+  const sendMassEmail = async () => {
+    const recipients = campaign?.recipients || [];
+    const validRecipients = recipients.filter(r => r.email);
+
+    if (validRecipients.length === 0) {
+      alert('No valid email addresses found');
+      return;
+    }
+
+    if (!user?.email) {
+      alert('Unable to determine sender email');
+      return;
+    }
+
+    // Generate BCC email list
+    const bccEmails = validRecipients.map(r => r.email).join(',');
+
+    // Generate Gmail URL with user's email in TO and all recipients in BCC
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(user.email)}&bcc=${encodeURIComponent(bccEmails)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    // Open Gmail draft
+    window.open(gmailUrl, '_blank');
+
+    // Mark all recipients as sent
+    try {
+      await apiFetch(`/api/campaigns/${id}/send-all`, {
+        method: 'POST'
+      });
+
+      // Update UI to mark all as sent
+      const now = Math.floor(Date.now() / 1000);
+      setCampaign(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          recipients: prev.recipients?.map(r => ({
+            ...r,
+            status: 'sent',
+            sent_at: now
+          }))
+        };
+      });
+    } catch (err) {
+      console.error('Failed to log mass email', err);
+      alert('Email draft opened, but failed to update status in system');
     }
   };
 
@@ -265,17 +385,25 @@ export function CampaignDetail() {
 
         {/* Right: Recipient Management */}
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-3">
             <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
               <UserPlus className="mr-2 text-blue-600" size={20} />
               Recipients
             </h2>
-            <button 
+            <button
               onClick={() => setShowSelector(true)}
               className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center font-medium"
             >
               <ListPlus size={20} className="mr-2" />
               Add From List...
+            </button>
+            <button
+              onClick={() => checkUnsavedChangesBeforeEmail(handleMassEmailClick)}
+              disabled={!campaign?.recipients || campaign.recipients.length === 0}
+              className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-indigo-600"
+            >
+              <Users size={20} className="mr-2" />
+              Send Mass Email (BCC)
             </button>
           </div>
 
@@ -297,12 +425,12 @@ export function CampaignDetail() {
                     )}
                   </div>
                   <div className="flex items-center space-x-2 ml-4">
-                    <button 
-                      onClick={() => draftEmail(recipient)}
+                    <button
+                      onClick={() => checkUnsavedChangesBeforeEmail(() => draftEmail(recipient))}
                       title="Draft Email"
                       className={`p-2 rounded-full transition-colors ${
-                        recipient.status === 'sent' 
-                          ? 'bg-green-50 text-green-600 hover:bg-green-100' 
+                        recipient.status === 'sent'
+                          ? 'bg-green-50 text-green-600 hover:bg-green-100'
                           : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
                       }`}
                     >
@@ -325,10 +453,46 @@ export function CampaignDetail() {
         </div>
       </div>
 
-      <PersonSelectorModal 
+      <PersonSelectorModal
         isOpen={showSelector}
         onClose={() => setShowSelector(false)}
         onSelect={addRecipients}
+      />
+
+      <ConfirmationModal
+        isOpen={showMassEmailConfirm}
+        onClose={() => setShowMassEmailConfirm(false)}
+        onConfirm={sendMassEmail}
+        title="Send Mass BCC Email"
+        message={`You are about to send a BCC email to ${campaign?.recipients?.length || 0} recipients.\n\nThis will:\n• Open a Gmail draft with all recipients in BCC\n• Mark all recipients as "sent" in the campaign\n• Log the email interaction\n\nMake sure to review and send the email from Gmail.`}
+        confirmText="Open Gmail Draft"
+        cancelText="Cancel"
+        variant="warning"
+      />
+
+      <ConfirmationModal
+        isOpen={showNameErrorModal}
+        onClose={() => setShowNameErrorModal(false)}
+        onConfirm={() => setShowNameErrorModal(false)}
+        title="Cannot Send Mass Email"
+        message="Your template contains {name} variables.\n\nMass BCC emails cannot use personalization variables because all recipients will see the same content.\n\nPlease remove all {name} placeholders before sending a mass email, or use individual emails instead."
+        confirmText="OK"
+        variant="danger"
+      />
+
+      <ConfirmationModal
+        isOpen={showUnsavedChangesModal}
+        onClose={() => {
+          setShowUnsavedChangesModal(false);
+          setPendingEmailAction(null);
+        }}
+        onConfirm={handleSaveAndContinue}
+        onCancel={handleContinueWithoutSaving}
+        title="Unsaved Changes"
+        message="You have unsaved changes to your campaign template.\n\nWould you like to save before sending the email?"
+        confirmText="Save & Continue"
+        cancelText="Continue Without Saving"
+        variant="warning"
       />
     </div>
   );

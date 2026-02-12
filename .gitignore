@@ -6,3 +6,5 @@ dist
 *.log
 *.sql
 SCR*.png
+.claude/
+.repomap.tags.cache.v1/

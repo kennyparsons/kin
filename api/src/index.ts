@@ -483,7 +483,7 @@ app.delete('/api/campaigns/:id/recipients/:person_id', async (c) => {
 app.post('/api/campaigns/:id/send/:person_id', async (c) => {
   const projectId = c.get('projectId')
   const { id, person_id } = c.req.param()
-  
+
   const campaign = await c.env.DB.prepare('SELECT title FROM campaigns WHERE id = ? AND project_id = ?').bind(id, projectId).first()
   if (!campaign) return c.notFound()
 
@@ -496,6 +496,30 @@ app.post('/api/campaigns/:id/send/:person_id', async (c) => {
   await c.env.DB.prepare(
     "INSERT INTO interactions (person_id, type, summary, date, project_id) VALUES (?, 'email', ?, unixepoch(), ?)"
   ).bind(person_id, `Sent campaign email: ${campaign.title}`, projectId).run()
+
+  return c.json({ success: true })
+})
+
+// Send mass email to all recipients (marks all as sent)
+app.post('/api/campaigns/:id/send-all', async (c) => {
+  const projectId = c.get('projectId')
+  const { id } = c.req.param()
+
+  const campaign = await c.env.DB.prepare('SELECT title FROM campaigns WHERE id = ? AND project_id = ?').bind(id, projectId).first()
+  if (!campaign) return c.notFound()
+
+  // 1. Update all recipients' status to sent
+  await c.env.DB.prepare(
+    "UPDATE campaign_recipients SET status = 'sent', sent_at = unixepoch() WHERE campaign_id = ?"
+  ).bind(id).run()
+
+  // 2. Log interactions for all recipients
+  await c.env.DB.prepare(
+    `INSERT INTO interactions (person_id, type, summary, date, project_id)
+     SELECT person_id, 'email', ?, unixepoch(), ?
+     FROM campaign_recipients
+     WHERE campaign_id = ?`
+  ).bind(`Sent mass campaign email: ${campaign.title}`, projectId, id).run()
 
   return c.json({ success: true })
 })
