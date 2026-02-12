@@ -8,3 +8,4 @@ dist
 SCR*.png
 .claude/
 .repomap.tags.cache.v1/
+.env
