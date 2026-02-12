@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Users, Home, LogOut, Menu, X, Bell, MessageSquarePlus, Send, ChevronDown, PlusCircle, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProject } from '../context/ProjectContext';
+import { VERSION } from '../version';
 
 export function Layout({ children }: { children: React.ReactNode }) {
 
@@ -237,7 +238,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                {user?.email}
              </p>
            </div>
-           <button 
+           <button
              onClick={() => {
                closeSidebar();
                logout();
@@ -247,6 +248,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
              <LogOut size={20} />
              <span>Sign Out</span>
            </button>
+           <div className="px-4 pt-3 text-center">
+             <p className="text-xs text-gray-400">v{VERSION}</p>
+           </div>
         </div>
       </aside>
       
